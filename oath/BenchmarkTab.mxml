@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/**
+ * BenchmarkTab
+ * 
+ * A small UI Component that does some rudimentary benchmarking of
+ * some algorithms in the AS3 Crypto library.
+ * Copyright (c) 2007 Henri Torgemane
+ * 
+ * See LICENSE.txt for full license information.
+ */
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+	label="Benchmark" width="100%" height="100%"
+	creationComplete="init()">
+	<mx:Button id="btn" label="Start" left="10" top="10" click="start()"/>
+	<mx:TextArea id="console" height="135" left="10" right="10" top="40" editable="false" fontFamily="Courier New"/>
+	<mx:Label text="Results" top="183" left="10"/>
+	<mx:TextArea id="result" left="10" top="209" bottom="10" right="10" editable="false" fontFamily="Courier New" fontSize="12"/>
+	<mx:Script>
+		<![CDATA[
+			import com.hurlant.crypto.hash.MD2;
+			import com.hurlant.util.Memory;
+			import com.hurlant.crypto.symmetric.ICipher;
+			import com.hurlant.crypto.hash.IHash;
+			import com.hurlant.crypto.symmetric.TripleDESKey;
+			import com.hurlant.crypto.symmetric.DESKey;
+			import com.hurlant.crypto.symmetric.BlowFishKey;
+			import com.hurlant.crypto.symmetric.XTeaKey;
+			import com.hurlant.crypto.symmetric.IMode;
+			import com.hurlant.crypto.symmetric.AESKey;
+			import com.hurlant.crypto.symmetric.CBCMode;
+			import com.hurlant.util.Hex;
+			import com.hurlant.crypto.prng.ARC4;
+			import com.hurlant.crypto.hash.HMAC;
+			import com.hurlant.crypto.hash.SHA256;
+			import com.hurlant.crypto.hash.SHA224;
+			import com.hurlant.crypto.hash.MD5;
+			import com.hurlant.crypto.hash.SHA1;
+			import flash.utils.getTimer;
+			import com.hurlant.crypto.prng.Random;
+
+			private const sizes:Array = [  16,  64, 256, 1024, 8192];
+			private const loops:Array = [1000, 500, 100,   50,   10];
+
+			private var key64:ByteArray = Hex.toArray("123456789ABCDEF0");
+			private var key128:ByteArray = Hex.toArray("3C3D3E3F41424344464748494B4C4D4E");
+			private var key192:ByteArray = Hex.toArray("78797A7B7D7E7F80828384858788898A8C8D8E8F91929394");
+			private var key256:ByteArray = Hex.toArray("98999A9B9D9E9FA0A2A3A4A5A7A8A9AAACADAEAFB1B2B3B4B6B7B8B9BBBCBDBE");
+
+			private var blocks:Array;
+			
+			private function hash_op(state:IHash, block:ByteArray):void { state.hash(block); }
+			private function hmac_op(state:HMAC, block:ByteArray):void { state.compute(key64, block); }
+			private function cipher_op(state:ICipher, block:ByteArray):void { state.encrypt(block); }
+			/**
+			 * Each line in this benchmark takes about 23s to test.
+			 */
+			private var benchmarks:Array = [
+ 				{state:new MD2,              op:hash_op, cut:100},
+ 				{state:new MD5,              op:hash_op},
+				{state:new SHA1,             op:hash_op},
+				{state:new SHA224,           op:hash_op},
+				{state:new SHA256,           op:hash_op},
+				{state:new HMAC(new MD5),    op:hmac_op},
+				{state:new HMAC(new SHA1),   op:hmac_op},
+				{state:new HMAC(new SHA224), op:hmac_op},
+				{state:new HMAC(new SHA256), op:hmac_op},
+				{state:new ARC4(key64),      op:cipher_op},
+				{state:new CBCMode(new XTeaKey(key128)), 		op:cipher_op, cut:10},
+				{state:new CBCMode(new AESKey(key128)), 		op:cipher_op, cut:10},
+				{state:new CBCMode(new AESKey(key192)), 		op:cipher_op, cut:10},
+				{state:new CBCMode(new AESKey(key256)), 		op:cipher_op, cut:10},				
+				{state:new CBCMode(new BlowFishKey(key128)),	op:cipher_op, cut:10},
+				{state:new CBCMode(new DESKey(key64)), 			op:cipher_op, cut:10},
+				{state:new CBCMode(new TripleDESKey(key192)), 	op:cipher_op, cut:10},
+			];
+		 
+			private var running:Boolean = false;
+			private var currentBenchmark:int = -1;
+			private var currentName:String = "";
+			private var currentObj:* = null;
+			private var currentBlock:int=-1;
+			private var currentOp:Function = null;
+			private var currentCount:uint = 0;
+			private var timeSpent:uint = 0; // in ms.
+		
+			private function init():void {
+				// setup blocks of data to work on.
+				blocks = [];
+				var r:Random = new Random;
+				var b:ByteArray;
+				for (var i:uint=0;i<sizes.length;i++) {
+					b = new ByteArray;
+					r.nextBytes(b, sizes[i]);
+					blocks[i] = b;
+				}
+			}
+		
+			private function start():void {
+				if (running) {
+					running=false;
+					btn.label = "Start";
+					writeln('');
+					writeln('Interrupted.');
+				} else {
+					running=true;
+					console.text="";
+					btn.label = "Stop";
+					currentBenchmark = -1;
+					nextBenchmark();
+				}
+			}
+			private function write(str:String):void {
+				console.text+=str;
+			}
+			private function writeln(str:String):void {
+				console.text+=str+"\n";
+			}
+			
+			private function startBenchmark(name:String, state:*, op:Function):void {
+				init(); // restore blocks..
+				// try to force a GC now to avoid one during benchmarking.
+				Memory.gc();
+				currentName = name;
+				currentObj = state;
+				currentBlock = -1;
+				currentOp = op;
+				nextBlock();
+			}
+			
+			private function nextBlock():void {
+				if (!running) return;
+				currentBlock++;
+				if (currentBlock>=blocks.length) {
+					nextBenchmark();
+					return;
+				}
+				write("Doing "+currentName+" for 3s on "+blocks[currentBlock].length+" size blocks: ");
+				timeSpent=0;
+				currentCount=0;
+				callLater(loop);
+			}
+			
+			private function nextBenchmark():void {
+				if (!running) return;
+				currentBenchmark++;
+				if (currentBenchmark>=benchmarks.length) {
+					callLater(done);
+					return;
+				}
+				var b:Object = benchmarks[currentBenchmark];
+				b.results = [];
+				startBenchmark(b.state.toString(), b.state, b.op);
+			}
+			
+			private function loop():void {
+				if (!running) return;
+				trace("loop. timeSpent="+timeSpent);
+				var b:ByteArray = blocks[currentBlock];
+				var l:uint = loops[currentBlock];
+				var c:Number = benchmarks[currentBenchmark].cut;
+				if (!isNaN(c)) {
+					l/=c;
+					if (l<1) l=1;
+				}
+				var t1:uint = getTimer();
+				for (var i:uint=0;i<l;i++) {
+					currentOp(currentObj, b);
+				}
+				var t:uint = getTimer()-t1;
+				if (timeSpent+t>3000) {
+					// don't add up. next.					
+					if (currentCount==0) {
+						// unless this iteration alone blew over 3s.
+						currentCount+=l;
+						timeSpent+=t;
+					}
+					writeln(currentCount +" "+currentName+"'s in "+(timeSpent/1000)+"s");
+					// put numbers on the benchmark.
+					var r:Object = benchmarks[currentBenchmark].results;
+					r[currentBlock] = {count:currentCount, time:timeSpent};
+					callLater(nextBlock);
+				} else {
+					currentCount+=l;
+					timeSpent+=t;
+					setTimeout(loop, t/2);
+				}
+			}
+			
+			private function done():void {
+				writeln("Done.");
+				running=false;
+				// strong OpenSSL inspiration going on, here.
+				var s:String = "The 'numbers' are in 1000s of bytes per second processed.\n"+
+					"type             16 bytes     64 bytes    256 bytes   1024 bytes   8192 bytes\n";
+				// loop through benchmarks
+				var t:String = "";
+				for (var i:uint=0;i<benchmarks.length;i++) {
+					var b:Object = benchmarks[i];
+					t+= padRight(b.state.toString(), 13);
+					for (var j:uint=0;j<b.results.length;j++) {
+						var r:Object = b.results[j];
+						// throughput = count*block/timeSpent
+						var throughput:uint = r.count * sizes[j] * 1000 / r.time;
+						t+=pretty(throughput);
+					}
+					s+=t+"\n";
+					t="";
+				}
+				result.text = s;
+			}
+			
+			private function pretty(b:uint):String {
+				var c:String = Math.round(b/10).toString();
+				var f:String = c.substr(0, c.length-2)+"."+c.substr(-2,2);
+				var s:String = f+"k";
+				while (s.length<13) s=" "+s;
+				return s;
+			}
+			private function padRight(s:String, l:uint):String {
+				while (s.length<l) s+=" ";
+				return s;
+			}
+		]]>
+	</mx:Script>
+</mx:Canvas>

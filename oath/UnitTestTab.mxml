@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/**
+ * UnitTestTab
+ * 
+ * A small UI Component that perform unit tests for
+ * the algorithms of the AS3 Crypto library.
+ * Copyright (c) 2007 Henri Torgemane
+ * 
+ * See LICENSE.txt for full license information.
+ */
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" 
+	label="Unit Tests" width="100%" height="100%"
+	implements="com.hurlant.crypto.tests.ITestHarness"
+	creationComplete="init()">
+	<mx:Button id="btn" label="Start" left="10" top="10" click="start()"/>
+	<mx:Label id="summary" left="73" right="10" top="12"/>
+	<mx:TextArea id="console" left="10" right="10" top="40" bottom="10" editable="false" fontFamily="Courier New"/>
+
+	<mx:Script>
+		<![CDATA[
+			import com.hurlant.crypto.tests.MD2Test;
+			import com.hurlant.crypto.tests.TLSPRFTest;
+			import com.hurlant.crypto.tests.BigIntegerTest;
+			import com.hurlant.crypto.tests.RSAKeyTest;
+			import com.hurlant.crypto.tests.CTRModeTest;
+			import com.hurlant.crypto.tests.TripleDESKeyTest;
+			import com.hurlant.crypto.tests.DESKeyTest;
+			import com.hurlant.crypto.tests.BlowFishKeyTest;
+			import com.hurlant.crypto.tests.ARC4Test;
+			import com.hurlant.crypto.tests.HMACTest;
+			import com.hurlant.crypto.tests.SHA224Test;
+			import com.hurlant.crypto.tests.SHA256Test;
+			import com.hurlant.crypto.tests.MD5Test;
+			import com.hurlant.crypto.tests.SHA1Test;
+			import com.hurlant.crypto.tests.OFBModeTest;
+			import com.hurlant.crypto.tests.CFB8ModeTest;
+			import com.hurlant.crypto.tests.CFBModeTest;
+			import com.hurlant.crypto.tests.CBCModeTest;
+			import com.hurlant.crypto.tests.ECBModeTest;
+			import com.hurlant.crypto.tests.XTeaKeyTest;
+			import com.hurlant.crypto.tests.AESKeyTest;
+			
+ 			private var testList:Array = [ AESKeyTest, XTeaKeyTest, 
+				ECBModeTest, CBCModeTest, CFBModeTest, CFB8ModeTest,
+				OFBModeTest, CTRModeTest, 
+				MD2Test, SHA1Test, MD5Test, SHA256Test, SHA224Test, HMACTest, 
+				ARC4Test, BlowFishKeyTest, DESKeyTest, TripleDESKeyTest,
+				RSAKeyTest, BigIntegerTest,
+				TLSPRFTest];
+			
+			private var testCount:uint;
+			private var testFailed:uint;
+			private var testIndex:uint;
+			
+			private function init():void {
+			}
+			private function start():void {
+				console.htmlText="";
+				testCount=0;
+				testFailed=0;
+				testIndex=0;
+				// run the tests
+				loop();
+			}
+			private function loop():void {
+				// run the next test
+				summary.htmlText = '<B><FONT COLOR="#00007F">Running...  '+Math.round(testIndex*100/testList.length)+'% complete.</FONT></B>';
+				new testList[testIndex](this);
+				testIndex++;
+				if (testIndex<testList.length) {
+					setTimeout(loop, 100);
+				} else {
+					setTimeout(summarize, 100);
+				}
+			}
+			private function summarize():void {
+				summary.htmlText = '<B><FONT COLOR="'+(testFailed>0?"#7F0000":"#007F00")+'">'+(testCount-testFailed)+"/"+testCount+" tests passed."+(testFailed>0?" "+testFailed+" FAILURES!":"")+"</FONT></B>";
+			}
+			private function write(str:String):void {
+				console.htmlText+=str;
+			}
+			private function writeln(str:String):void {
+				console.htmlText+=str+"\n";
+			}
+			
+			// ITestHarness
+			public function beginTestCase(name:String):void {
+//				writeln("BEGIN: "+name);
+			}
+			public function endTestCase():void {
+//				writeln("END.");
+			}
+			public function beginTest(name:String):void {
+				write("  - "+name+"... ");
+			}
+			public function passTest():void {
+				writeln('<font color="#007F00">Ok.</font>');
+				testCount++;
+			}
+			public function failTest(msg:String):void {
+				writeln('<font color="#7F0000">FAIL! - '+msg+"</font>");
+				testCount++;
+				testFailed++;
+			}
+		]]>
+	</mx:Script>
+	
+</mx:Canvas>

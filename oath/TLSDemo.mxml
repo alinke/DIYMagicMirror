@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/**
+ * TLSTab
+ * 
+ * A UI Component to showcase the TLS goodies
+ * made available in the AS3 Crypto library.
+ * Copyright (c) 2007 Henri Torgemane
+ * 
+ * See LICENSE.txt for full license information.
+ */
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" label="TLS" width="100%" height="100%">
+	<mx:TextArea text="Not done yet.&#xa;&#xa;Keep in mind most web servers with TLS support are not serving a crossdomain.xml policy file that would allow a flash movie loaded from the internet to access them.&#xa;&#xa;However, local flash movies (or AIR apps) would have no problem using this TLS library.&#xa;" height="148" left="10" top="10" right="10" editable="false" borderStyle="none"/>
+
+</mx:Canvas>

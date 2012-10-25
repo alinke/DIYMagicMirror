@@ -1,0 +1,176 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1038\cocoasubrtf350
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww24920\viewh12860\viewkind1
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+
+\f0\b\fs24 \cf0 Arduino with Flash communication bundle v1.6 - 11-02-2011	\
+
+\i\b0 http://www.kasperkamperman.com/blog/arduino/arduino-flash-communication-as3/\
+
+\i0 ================================================================\
+\
+
+\b Included files :
+\b0 \
+\
+
+\b FlashFiles  
+\b0 	\
+- as3glue (
+\i http://code.google.com/p/as3glue/ 
+\i0 ) \
+- monitor objects (
+\i http://www.kasperkamperman.com 
+\i0 )\
+- programming example \
+- standalone monitor source code\
+\
+
+\b Standalone monitor
+\b0 		\
+- .app (osx), .exe (windows)\
+\
+
+\b Serproxy	
+\b0 \
+- Osx version : Tinkerproxy ( renamed to Serproxy )\
+  (
+\i  http://code.google.com/p/tinkerit/wiki/TinkerProxy 
+\i0 )\
+- Windows version : Serialproxy 0.1.4 ( renamed to Serproxy )\
+  ( 
+\i http://www.cote.cc/blog/serialproxy-v014-can-use-com-ports-above-9
+\i0  )\
+\
+This library is made as a simple start up for the classes Physical Computing at Saxion - Enschede, The Netherlands ( course Art & Technology ). \
+\
+Make sure to check out the resources of the individual packages above and the Arduino playground for more communication options. \
+
+\i http://www.arduino.cc/playground/Interfacing/Flash
+\i0 \
+
+\b \
+
+\b0 ================================================================
+\b \
+\
+What does it do ?
+\b0 \
+\
+Glue is an ActionScript 3 library that enables communication between Flash and Arduino boards. Since Flash cannot interface the serial port directly you'll need a proxy program in between that converts incoming serial data the XMLsocket data. \
+\
+The monitor is useful to check if all the connections are working good. You can monitor directly all the sensors and actuators connected to your Arduino board. \
+\
+The example code file is a start point to program your own things controlled by Arduino. \
+\
+================================================================\
+\
+
+\b How to get it to work ?
+\b0 \
+\
+\
+\
+\
+Steps :\
+\
+0.	Download Arduino from arduino.cc. Use Arduino 018 or higher. The Firmata 	library included with Arduino 017 is not stable.  \
+\
+1. 	Upload StandardFirmata (included with Arduino) to the Arduino board. \
+	File > Sketchbook > Examples > Firmata > StandardFirmata\
+	\
+2. 	Edit serproxy.cfg ( see also the comments in this file ). Commented lines start 	with the number sign ( # )\
+   \
+    	You can find the serialport of Arduino in the Arduino IDE under \
+	Tools/SerialPort/\
+\
+	Osx : Make sure you start with "cu.usbserial" instead of "tty.usbserial" in 	serproxy.cfg\
+   \
+   	By changing the setup for either windows or osx and change the serialport 	number/name. \
+\
+	If you see :  "Couldn't find 'comm_ports' entry in config file" \
+	Make sure you uncomment ( remove # symbol in front of the line ) the 	comm_ports entry. \
+   	    \
+3. 	Run serproxy. If you see firewall dialogs, choose unblock\
+\
+4.	Try to run as3glue_standalone_monitor. If you did the serproxy configuration 	good, you are supposed to see some movement. \
+	Set output pin 13 to high to see the onboard led on the Arduino. \
+\
+5.	If you run an .swf outside of the Flash IDE, you probably get some security 	messages. \
+\
+
+\b Security messages 
+\b0 \
+   \
+	If you run an .swf from Explorer/Finder you'll probably get a "Flash Player 	Security" pop-up. \
+\
+	Try to run your program as .exe or .app. \
+         More info : \
+         http://tiny.cc/as3glue_security   	\
+\
+
+\b Code your own project
+\b0 \
+\
+Make sure the net ( As3Glue code ) and the com ( monitor code ) folders are in the same directory as your Flash files. The example code uses the classes in those folders to compile and run the code. \
+\
+\
+================================================================\
+\
+
+\b AS3Glue copyrights
+\b0 \
+\
+Copyright (c) 2007-2008 Erik Sjodin, eriksjodin.net, Bjoern Hartmann bjoern.org\
+\
+Permission is hereby granted, free of charge, to any person obtaining a copy\
+of this software and associated documentation files (the "Software"), to deal\
+in the Software without restriction, including without limitation the rights\
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\
+copies of the Software, and to permit persons to whom the Software is\
+furnished to do so, subject to the following conditions:\
+\
+The above copyright notice and this permission notice shall be included in\
+all copies or substantial portions of the Software.\
+\
+Glue is an open source library licensed under the above MIT licence.\
+\
+================================================================\
+\
+
+\b Monitor and example code 
+\b0 \
+\
+Copyleft 2009 Kasper Kamperman, http://www.kasperkamperman.com \
+Art & Technology - Saxion, University of Professional Education - NL, Enschede\
+ \
+
+\b Serproxy - osx version
+\b0 \
+\
+Serproxy 0.2.0 - Tinker.it \
+Based on code by (C)1999 Stefano Busti, (C)2005 David A. Mellis\
+\
+http://code.google.com/p/tinkerit/downloads/detail?name=tinkerproxy-2_0.zip\
+\
+
+\b Serproxy - windows version
+\b0 \
+\
+Serproxy 0.1.4\
+\
+Stefano Busti (sbusti@nildram.co.uk)\
+Modified by:  David A. Mellis (dam@mellis.org)\
+		     Jean-Philippe Cote (jp@cote.cc)\
+   \
+http://www.cote.cc/blog/serialproxy-v014-can-use-com-ports-above-9\
+\
+
+\b Firmata ( not included )
+\b0 \
+\
+www.firmata.org \
+License see license.txt in the folder\
+\
+================================================================}

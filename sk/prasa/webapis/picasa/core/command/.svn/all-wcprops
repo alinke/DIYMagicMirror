@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/407/trunk/src/sk/prasa/webapis/picasa/core/command
+END
+Invoker.as
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/core/command/Invoker.as
+END
+GetFeedCommand.as
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/!svn/ver/407/trunk/src/sk/prasa/webapis/picasa/core/command/GetFeedCommand.as
+END
+ICommand.as
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/core/command/ICommand.as
+END

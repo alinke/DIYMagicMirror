@@ -1,0 +1,29 @@
+<!--
+ To build as3crypto.swc, use
+
+   compc -load-config=build-swc.xml
+
+ That is all.
+-->
+<flex-config>
+   <benchmark>true</benchmark>
+   <compiler>
+      <external-library-path>
+         <path-element>${flexlib}/libs/playerglobal.swc</path-element>
+      </external-library-path>
+      <source-path>
+         <path-element>.</path-element>
+      </source-path>
+   </compiler>
+   <include-classes>
+      <class>com.hurlant.crypto.Crypto</class>
+      <class>com.hurlant.crypto.tls.TLSSocket</class>
+   </include-classes>
+   <metadata>
+      <creator>Henri Torgemane</creator>
+      <description>http://crypto.hurlant.com/</description>
+      <language>EN</language>
+      <title>AS3 Cryptography Library</title>
+   </metadata>
+   <output>bin/as3crypto.swc</output>
+</flex-config>

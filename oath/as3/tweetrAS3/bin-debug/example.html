@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Example Page</title>
+    <script language="JavaScript" type="text/javascript" src="js/swfobject.js"></script>
+    <script language="JavaScript" type="text/javascript" src="js/tweetrOAuth.js"></script>
+</head>
+
+<body style="background-color: #333333;">
+    
+    <div id="flashContentDiv" style="position: absolute; width: 700px; height: 400px; border: solid 1px black; 
+                                left: 50%; top:50%; margin-left: -350px; margin-top: -200px;">
+        If you see this you don't have the required Flash Player! :P
+    </div>
+    
+    <script type="text/javascript">
+
+        var swfObj = new FlashObject("tweetrAS3.swf", "myFlashId", "700", "400", "9", "#555555");
+        swfObj.addParam("allowScriptAccess", "sameDomain");
+        swfObj.write("flashContentDiv");
+        
+        OAuth.setFlashElement("myFlashId");
+    </script>
+</body>
+</html>

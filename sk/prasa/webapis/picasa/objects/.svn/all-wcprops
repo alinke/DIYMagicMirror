@@ -1,0 +1,149 @@
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects
+END
+Category.as
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/Category.as
+END
+FeedElement.as
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/FeedElement.as
+END
+User.as
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/User.as
+END
+Namespaces.as
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/Namespaces.as
+END
+Media.as
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/Media.as
+END
+Links.as
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/Links.as
+END
+Title.as
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/Title.as
+END
+MediaThumbnail.as
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/MediaThumbnail.as
+END
+Text.as
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/Text.as
+END
+Kind.as
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/Kind.as
+END
+Generator.as
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/Generator.as
+END
+OpenSearch.as
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/OpenSearch.as
+END
+Subtitle.as
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/Subtitle.as
+END
+Exif.as
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/Exif.as
+END
+Link.as
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/Link.as
+END
+GPhoto.as
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/GPhoto.as
+END
+Utils.as
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/Utils.as
+END
+Rights.as
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/Rights.as
+END
+Author.as
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/Author.as
+END
+UrlParams.as
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/UrlParams.as
+END
+Content.as
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/Content.as
+END
+Contributor.as
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/Contributor.as
+END
+MediaContent.as
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/MediaContent.as
+END
+Geo.as
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/objects/Geo.as
+END

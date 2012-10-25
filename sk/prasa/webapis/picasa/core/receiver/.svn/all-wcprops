@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/407/trunk/src/sk/prasa/webapis/picasa/core/receiver
+END
+IReceiver.as
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/!svn/ver/407/trunk/src/sk/prasa/webapis/picasa/core/receiver/IReceiver.as
+END
+GetFeedReceiver.as
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/!svn/ver/407/trunk/src/sk/prasa/webapis/picasa/core/receiver/GetFeedReceiver.as
+END

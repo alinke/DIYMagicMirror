@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/**
+ * CryptoDemo
+ * 
+ * A quick MXML UI to showcase the AS3 Crypto library.
+ * Copyright (c) 2007 Henri Torgemane
+ * 
+ * See LICENSE.txt for full license information.
+ */
+-->
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" xmlns:ns1="*"
+	viewSourceURL="srcview">
+	<mx:Label text="AS3 Crypto Demo page" left="10" top="10"/>
+	<mx:TabNavigator left="10" top="36" bottom="10" right="10">
+		<ns1:PublicTab/>
+		<ns1:SecretTab/>
+		<ns1:HashTab/>
+		<ns1:HmacTab/>
+		<ns1:BenchmarkTab/>
+		<ns1:UnitTestTab/>
+		<ns1:MonkeyTab/>
+		<ns1:TLSDemo/>
+	</mx:TabNavigator>
+	<mx:LinkButton label="Crypto.hurlant.com" right="10" top="8" click="navigateToURL(new URLRequest('http://crypto.hurlant.com/'))"/>
+	
+</mx:Application>

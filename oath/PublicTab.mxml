@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/**
+ * PublicTab
+ * 
+ * A UI Component that allows one to quickly test the RSA functionality
+ * made available in the AS3 Crypto library.
+ * Copyright (c) 2007 Henri Torgemane
+ * 
+ * See LICENSE.txt for full license information.
+ */
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" label="Public Key" width="100%" height="100%">
+	<mx:TextArea height="45" width="100%" wordWrap="true" borderThickness="0">
+		<mx:htmlText>
+		<![CDATA[Use this tab to encrypt(fast),decrypt(slow) or generate RSA keys(way slow).
+Generating keys greater than 1024 bits is likely to time-out before completion.
+Decrypting with a key greater than 2048 bits is painfully slow.]]>
+		</mx:htmlText>
+	</mx:TextArea>
+	<mx:HBox width="100%" top="45" left="0" right="0" height="30">
+		<mx:Label text="RSA Key:"/>
+		<mx:Button label="4096 bits" click="populate4096()"/>
+		<mx:Button label="2048 bits" click="populate2048()"/>
+		<mx:Button label="1024 bits" click="populate1024()"/>
+		<mx:Button label="512 bits" click="populate512()"/>
+		<mx:Button label="Generate" click="generate(parseInt(genbits.text))"/>
+		<mx:TextInput width="48" text="512" id="genbits"/>
+		<mx:Label text="bits."/>
+	</mx:HBox>
+	<mx:VBox id="left" top="75" left="3" width="49%" bottom="3">
+		<mx:HBox width="100%">
+			<mx:Label text="Plain Text:"/>
+			<mx:ComboBox id="inputFormat" labelField="@label" change="displayInput()">
+			<mx:dataProvider>
+				<mx:XMLList>
+					<item label="Text" value="text"/>
+					<item label="Hex" value="hex"/>
+					<item label="Base64" value="b64"/>
+				</mx:XMLList>
+			</mx:dataProvider>
+			</mx:ComboBox>
+		</mx:HBox>
+		<mx:TextArea id="input" keyDown="currentInput=null" fontFamily="Courier New" fontSize="12" width="100%" height="50%"/>
+		<mx:HBox width="100%">
+			<mx:Label text="Cipher Text:"/>
+			<mx:ComboBox id="outputFormat" labelField="@label" selectedIndex="2" change="displayOutput()">
+			<mx:dataProvider>
+				<mx:XMLList>
+					<item label="Text" value="text"/>
+					<item label="Hex" value="hex"/>
+					<item label="Base64" value="b64"/>
+				</mx:XMLList>
+			</mx:dataProvider>
+			</mx:ComboBox>
+		</mx:HBox>
+		<mx:TextArea id="output" keyDown="currentResult=null" height="50%" editable="false" fontFamily="Courier New" fontSize="12" width="100%"/>
+		<mx:HBox width="100%">
+			<mx:Button label="Encrypt" click="encrypt()"/>
+			<mx:Button label="Decrypt" click="decrypt()"/>
+		</mx:HBox>
+	</mx:VBox>
+	<mx:VBox id="right" top="75" width="49%" right="3" height="{left.height}" paddingRight="3">
+		<mx:HBox width="100%">
+			<mx:Label text="Modulus:"/>
+			<mx:ComboBox id="modFormat" labelField="@label" selectedIndex="1" change="displayModulus()">
+			<mx:dataProvider>
+				<mx:XMLList>
+					<item label="Text" value="text"/>
+					<item label="Hex" value="hex"/>
+					<item label="Base64" value="b64"/>
+				</mx:XMLList>
+			</mx:dataProvider>
+			</mx:ComboBox>
+		</mx:HBox>
+		<mx:TextArea id="modulus" keyDown="currentModulus=null" height="68" fontFamily="Courier New" fontSize="12" width="100%"/>
+		<mx:HBox width="100%">
+			<mx:Label text="Public Exponent (hex):"/>
+			<mx:TextInput id="exponent" fontFamily="Courier New" fontSize="12" width="100%"/>
+		</mx:HBox>
+		<mx:HBox width="100%">
+			<mx:Label text="Private Exponent:"/>
+			<mx:ComboBox id="privateFormat" labelField="@label" selectedIndex="1" change="displayPrivate()">
+			<mx:dataProvider>
+				<mx:XMLList>
+					<item label="Text" value="text"/>
+					<item label="Hex" value="hex"/>
+					<item label="Base64" value="b64"/>
+				</mx:XMLList>
+			</mx:dataProvider>
+			</mx:ComboBox>
+		</mx:HBox>
+		<mx:TextArea id="privateExponent" keyDown="currentPrivate=null" height="68" fontFamily="Courier New" fontSize="12" width="100%"/>
+		<mx:HBox width="100%">
+			<mx:Label text="P:"/>
+			<mx:ComboBox id="pFormat" labelField="@label" selectedIndex="1" change="displayP()">
+			<mx:dataProvider>
+				<mx:XMLList>
+					<item label="Text" value="text"/>
+					<item label="Hex" value="hex"/>
+					<item label="Base64" value="b64"/>
+				</mx:XMLList>
+			</mx:dataProvider>
+			</mx:ComboBox>
+		</mx:HBox>
+		<mx:TextArea id="p" keyDown="currentP=null" height="68" fontFamily="Courier New" fontSize="12" width="100%"/>
+		<mx:HBox width="100%">
+			<mx:Label text="Q:"/>
+			<mx:ComboBox id="qFormat" labelField="@label" selectedIndex="1" change="displayQ()">
+			<mx:dataProvider>
+				<mx:XMLList>
+					<item label="Text" value="text"/>
+					<item label="Hex" value="hex"/>
+					<item label="Base64" value="b64"/>
+				</mx:XMLList>
+			</mx:dataProvider>
+			</mx:ComboBox>
+		</mx:HBox>
+		<mx:TextArea id="q" keyDown="currentQ=null" height="68" fontFamily="Courier New" fontSize="12" width="100%"/>
+		<mx:HBox width="100%">
+			<mx:Label text="D mod (P-1):"/>
+			<mx:ComboBox id="dmp1Format" labelField="@label" selectedIndex="1" change="displayDMP1()">
+			<mx:dataProvider>
+				<mx:XMLList>
+					<item label="Text" value="text"/>
+					<item label="Hex" value="hex"/>
+					<item label="Base64" value="b64"/>
+				</mx:XMLList>
+			</mx:dataProvider>
+			</mx:ComboBox>
+		</mx:HBox>
+		<mx:TextArea id="dmp1" keyDown="currentDMP1=null" height="68" fontFamily="Courier New" fontSize="12" width="100%"/>
+		<mx:HBox width="100%">
+			<mx:Label text="D mod (Q-1):"/>
+			<mx:ComboBox id="dmq1Format" labelField="@label" selectedIndex="1" change="displayDMQ1()">
+			<mx:dataProvider>
+				<mx:XMLList>
+					<item label="Text" value="text"/>
+					<item label="Hex" value="hex"/>
+					<item label="Base64" value="b64"/>
+				</mx:XMLList>
+			</mx:dataProvider>
+			</mx:ComboBox>
+		</mx:HBox>
+		<mx:TextArea id="dmq1" keyDown="currentDMQ1=null" height="68" fontFamily="Courier New" fontSize="12" width="100%"/>
+		<mx:HBox width="100%">
+			<mx:Label text="1/Q mod P:"/>
+			<mx:ComboBox id="coeffFormat" labelField="@label" selectedIndex="1" change="displayCoeff()">
+			<mx:dataProvider>
+				<mx:XMLList>
+					<item label="Text" value="text"/>
+					<item label="Hex" value="hex"/>
+					<item label="Base64" value="b64"/>
+				</mx:XMLList>
+			</mx:dataProvider>
+			</mx:ComboBox>
+		</mx:HBox>
+		<mx:TextArea id="coeff" keyDown="currentCoeff=null" height="68" fontFamily="Courier New" fontSize="12" width="100%"/>
+	</mx:VBox>
+	<mx:Script>
+		<![CDATA[
+			import mx.core.UIComponent;
+			import com.hurlant.crypto.rsa.RSAKey;
+			import com.hurlant.crypto.rsa.RSAKey;
+			import com.hurlant.util.Base64;
+			import com.hurlant.util.Hex;
+			
+			private var currentInput:String;
+			private var currentResult:String;
+			private var currentModulus:String;
+			private var currentExponent:String;
+			private var currentPrivate:String;
+			private var currentP:String;
+			private var currentQ:String;
+			private var currentDMP1:String;
+			private var currentDMQ1:String;
+			private var currentCoeff:String;
+
+			private function populate4096():void {
+				var exp:String = "10001";
+				var mod:String = "CD3FDBBEF703F62847113467ED9A30CA6B1E424E0CE713C072B537C53DCFF0FB221F9700"+
+				"529F8A05D6621620B08340AB55A949993F40B1753517C2E2950707002E2B5B9966D00827D0455C36"+
+				"D7B084837F99D7F4D37E1D2051AD883FE8A7F6E12EA33023EB9E9F69A26853E64218AC8025243109"+
+				"C1644123C23E1AD839E703082B584425A3059AB062CF973BD53D8FDA87BF9A40CC40D7B1EF81B7BC"+
+				"65F0281054540C622689CB313F1DC6FDDDA38B9C2CBD56F5E43021FE63AB4C92EFE78F620B6DD8C4"+
+				"1EAB11B4E5A8C07F3CB81E17DC46133E97D3941CE3AE5EDB8B85D33184422945C540CCE9553867EF"+
+				"CB71CD1731C7E3E7EF90C66E2A5F4CD96AD32B85E0D48A35AB9CC3A5F0E7FF3A053FD5CE1950C828"+
+				"2B716CC3AD862817E80C5982DA0BE01C7C524A71FA34A3EFCD8290158D628DCA6E075E3EAFAB5F4A"+
+				"9B6CB01B89CCA4A47F7D7628EFD7B1C6800F0BAB7803228D286884E17094739A0403F00E50FB0B6D"+
+				"7DF7927855B7C3357EB8C6DFF30A8AB4655773B0430529555259092645214B5F8A8FFCEE1C5ABE02"+
+				"90CF49BE4CB26418615166818338FC32058E117D70C89AB8C3868D8C83AA2343546E121A0C095D42"+
+				"5B5D8B6FEE864561741D679BF976B6C4A05654CC737B6AB75DE925235E4D85ACD4FC0B57476BAB99"+
+				"A22018FB7314FE434A4409825EFDDABA4C0A5440D6CB04C3107159EAD792A0FC70F54D79";
+				var pri:String = "00a4fa3d61a41f950f0f00af4512612bf2a8636c1c5c96a8f3b9c01c11f8" + 
+						"fb59d222bd8d9c7ecd2a1e43121883321e6e2ec9ee06f09d3d1ce6ff4418" + 
+						"2c1469cfa0bf7bae67019319db16b789c5b35d7946519c914f83680d755a" + 
+						"f1c760c75bab3f99432680d8f56961795fae80988448b3c026f51bc84d13" + 
+						"66f0cd06bae2dfe339ffcd3509a39def96f3f5b4b42d550c7a353f3777fa" + 
+						"35ecaa63bfbab63ea1e93226f65ff5ccd059793e286b38c79c9bad6ef0ca" + 
+						"235fc5a8ad57e3eaeaf8d7021366e866a24d9c67e125f09cba294e3d3224" + 
+						"a656f5ab08303780733a5ff2282177ddbd687b627011c543f0d0ea9876e2" + 
+						"c950044216be237abc3666dfd8aadb0e515e259c9a84366a65c3a0428e47" + 
+						"793ae8fc2a87305f1e73ce1df5db045bfa4f26e1cf0798ab843b571de91e" + 
+						"5203fae8c33ebac36eea3a948c650b6648a66c665291f1faa83e0440ae34" + 
+						"a03fa0577ecc81e45cbf0c22864669ec2b89f013da4674bd8185a7f5d7c3" + 
+						"d82390f08f6c169fc198f66ed6aba40fdc4ef0232b5b6064ce8a1f28d973" + 
+						"055b7fa29a5b43d490ef1e4811f0bda20735d65110816561139dcee05540" + 
+						"0bbf28463bfd0104007480993d1565948aa5d58d32e053a0b3eab3c8133e" + 
+						"828d115f1fd3e6ec348e571d4281951b7d96f2ea632da2b2633644af8f37" + 
+						"430a991bf2c012905b4dacc3e006065f7f33f5619479467292d17e7c730d" + 
+						"03e7e1";
+				var p:String = "00fbbe4389f3c5ce650d68cbbda266b73638a43d44d546b984346736a6c7" + 
+						"dc7a0256e3a69e6e1fa2dbac486b97909f006bc56f1aad1f5c1808c6bec1" + 
+						"ce272c6791605e303576027f912b46848d4e8ba2184feabf5daf20e9d906" + 
+						"1ade20aade31b2dfcef1bc19d04caea50187f624b6e83b11e4b191ef7837" + 
+						"3827aef1f94ffb74b6e103fec2928d02ce48c01d56fb896128c4338fa8ff" + 
+						"3accb6feacaf6a68949170469e316f1783c93dc69daa1c9f4c446ffd0696" + 
+						"f35c67f6c07a589f81e51120f7e8f827fb1733d98ac4b32e5d680a02446a" + 
+						"91a550d4e25f3bbad5dbe39d8be6cdaa1f411a3e79d2d085e10be6286a75" + 
+						"db39236c8cfc3d9cb70f2eb039f298ecad";
+				var q:String = "00d0b8558a76c87423c4e666af69b8de5b4592e06ca1b8bc43ca295e0938" + 
+						"601ae6bf0ef27e527b7073b4f50dce9483c847330a224f0895af02abc7c5" + 
+						"a8035d54c313d789d0be3fe29b83606eb8427f520cead99ccec1ff9bf708" + 
+						"e4fe24f7161f7a7eef070db7efab563eebd7dad6ffb8f3779fb619b5eb63" + 
+						"4e631a5596db9396fc9e9b805645330bfbdabf72091833245055b5d8f9e4" + 
+						"175c094095f7f07da4e0e9b028367d3cc31b8747b381a60793aaf035db2d" + 
+						"91111843b0f8ec7e5db34d89c21d32daedfb8bc45cca2a11a05c35962031" + 
+						"81d6edd7f7e3302ef2dcaae158b08f2f1ebe1598edd55100e9caf75a66b8" + 
+						"88383ac73216fcb2dd479011232ce3517d";
+				var p1:String = "22a3e9b33fe206268d93d0054625902c5bdaedbb5d05a05d7ac0811aae01" + 
+						"bea037c89792d160750e794475d9a342ddd1f696f53ac147f0deb44a676c" + 
+						"b0a341951587a0669ad8792946a52b742e4cb47f57efdb694ec1deabc855" + 
+						"461f84a3927f24a0db4ea0d6b2d68d4a0aa56a23e90cc7c78a4fa47e0c4b" + 
+						"23dac4dd238e5c5f15d370e8e1359a1f3c8f82fa071ebe49d7c5a88cfea1" + 
+						"dead8799c78182e67ea4ce72d226913bc72343034af7294c5b5675a0c480" + 
+						"b4447205c6500f92d62c6736f5cdbfe2a32cb5508d0482eac3782d1bb0f6" + 
+						"5da323c80a86b38cddf71224c01ba8bf283c2e40a12ba460753cb46f01cc" + 
+						"aaae1f2fbf3dd324b5681d43bc0822f9";
+				var q1:String = "009e7a28312f49baad6216d307038e23ff474f6369f84d4d5d67858b6a12" + 
+						"cd1dfff037c835d428f7d45324f22bd5a64e0e89997b3d69364621100f6a" + 
+						"6bccca33cebf251bf64c4e33a082db58963d9f70cc70117537a42391e7bb" + 
+						"702bec23543fe881b2ba37575efa484d1443dc5cfce410b0d6aaacd0ed7e" + 
+						"848948f88dc801435662938d99738773e4f24e04a71521d7c3cba07cb418" + 
+						"d507c3daaf4407ed4ea09baf6e89190466dc6316351d0ed497f1e5dbeea4" + 
+						"a58e464f37737a15e4cd7ce549676432c91a0320c0979be3b04ff33c1f0b" + 
+						"981b7a924e1cc97c0c5932c251d61591e094d1cf415e83d7deac86adb46b" + 
+						"0ebb2b1e0e5157e3f3921fb8736de4d7fd";
+				var co:String = "0c5f6624b924ad34b75ca67b72eb8a11199f6a7122653248e92161c7c920" + 
+						"52c3243ef882454d74d761820fd26d1f2bb650a2b9d3f85e467905505542" + 
+						"078002d8099292b7c41c519eb95abbb3758150de02367673142ca9535e41" + 
+						"64dc2721e6fb5aa7ba21fc0f5d899696ecbae3993c4d843340f6329ffdba" + 
+						"1159372e8354f34a406734841ff1a38c38dbe9f9e42fcb0598e6725c6bda" + 
+						"c8129c8904d48382ceebb9a84fd39312d87358bccc3ff2b26d1135f5ab4c" + 
+						"df8294b7e4b5229a3ecc48884b9e7c49a2b982ad69ad7d8cc2384a259ff8" + 
+						"6bd082b6f37ea692b1784ccd9fb3117b327efa8a52db935296b9b03e221f" + 
+						"a462ead6e909a05a228d977c62393538";
+				exponent.text = exp;
+				currentModulus = mod;
+				currentPrivate = pri;
+				currentP = p;
+				currentQ = q;
+				currentDMP1 = p1;
+				currentDMQ1 = q1;
+				currentCoeff = co;
+				modFormat.selectedIndex=1;//hex
+				displayModulus();
+				displayPrivate();
+				displayP();
+				displayQ();
+				displayDMP1();
+				displayDMQ1();
+				displayCoeff();
+			}
+
+			private function populate2048():void {
+				var exp:String = "10001";
+				var mod:String = "962594DF2E23FAB3DD367C0C141E6F83877A9FD6082788CA5EBC5F3CF8A9CE7C194CF9D5"+
+					"C261577263F86DB380ABD08EC8353BA2F65ABBB712A88CB41ABC87637B5873B1AC59C813C1CD0F8C"+
+					"05A35B5BDEC0D27592AFEA13185E4C9DD7968415E3AB9CB5109FF470801E5BF6D8915B5AD970CCBB"+
+					"A501174B0C931724C3D7371726712AF61326B02846CB6ADC3A5BDBF0BB821664E30B4B1068F56202"+
+					"2F15825432AC9C59D4865B97409D9A0B3BFAE52A2668969132E8E5EA8A949BDEE93578FE4F2B7EE0"+
+					"C7543B1B5FEFDBA6A876253358A6E8188474B603D937C7F3F4BF12B093942089D10F97439AA412E8"+
+					"989CFDE6DAFD99EAF1921C593689F904EECFFCDF";
+				var pri:String =  "5c6dd62f6da0087d20f8a1746e0e2e67b1c6f30e3706df5674eb51559f5e29168c1caecf" + 
+						"c0515c1bb71effa938d48c16d978abb5ae223cdc7e47f4160b3f73b8f1fd897b1eb6464ca3493100e" + 
+						"9979e6df7ba8bd484f076103b3811c2392d1732c26caa936c208bc1959d1acfe291d8c31c882c0077" + 
+						"9b2c53aef1fd954c59f836feb91924d670d5c5bc3e0f2cf0ea568cceb7feee287c0e7dfef4c8a811e" + 
+						"9a7d45c80782baf2fb6869dd966406ac77b4b6fc8d748224f0d887f5d347098047716ea728f8c23e4" + 
+						"3716119ea08c76db3843234376dfcc6e77beb94a7828a501e35a9a16cdf7e574c1f328079a3bd831a" + 
+						"ee989ebb99c41893171a5a4e74006e42601";
+				var p:String = "00c443bc2c2f273f3c2cd4e0ad27357b2cad9434bfda3ce9566e8dd56cf26ec35936fed099a662d8267f5de81b" + 
+						"68f2ea0900ca1d6fb2bcb7c932ec3c97d4ee18f00d0994813e984df6e24fbb0490ca9b7bf8025bdc0221d7d124" + 
+						"43d9299d9549dcd5a0ca51faf779e7891bb8b2cca3b6ce85f518dc40d9ea4af6eb8f11948fffe1";
+				var q:String = "00c3d881a28d35054318df78b3c514903c2d933b9bf392b0c08af60b68f4746dab82c7ced227919544de15141a" + 
+						"0d8fe30c9176d535a4c73675532782ac79ed059fe38d03826303bcda1e2912ce4faa0548f1d5c656fc92b3ad17" + 
+						"46290c0bdd6f1981d673b84bfcf5c3c3ffd5cc178681dbd11dcd67dc986611f5c467958db294bf";
+				var p1:String = "27450a4ca8eea86768ecfb3b8a21d8507b36b14b45e67425b81f26fa1293f9004bd1b67957e2652f66c2aa6379" + 
+						"9f49169e12d2cafbaf68f297feceacee8ce96e769d591a7724d04cbac18b41019b987ab887f84b501de769d060" + 
+						"c6fdddaaf6497a711eaa4295ebcd5910b3e70aad2331b579f20c77e96248b799305a2b2898e1";
+				var q1:String = "3e67b7ef2715b5068b5f7223be71edffeef9d26dc03086f7e38fc1550148344609974794f99ccf36b1997fdd49" + 
+						"630713532acd8799690d365777e890b30d4ed482fac51a801889cdeafc658cae1fdc2d413a404829954981a73f" + 
+						"e90678a567a87611f2afd02edbd5349849f50dae03a51abe675c68137bbacf5875355780871b";
+				var co:String = "0ee32829a1db285e4ac00896dc0eed7011409884537c8ababb4b9f2309eaa7187011bf1a21a0c0d107a994b79c" + 
+						"f4d75da3907a4c7fb91a2dc0c4ccc2d566fb56d408e96f7d47eed9ff10a15ecaa9d391788380b6f8071490fa76" + 
+						"d741cc57dfc21a8b2fd8cba39d76558e44f14da6df50902f8186aac337c4b931edc28be7a423";
+				exponent.text = exp;
+				currentModulus = mod;
+				currentPrivate = pri;
+				currentP = p;
+				currentQ = q;
+				currentDMP1 = p1;
+				currentDMQ1 = q1;
+				currentCoeff = co;
+				modFormat.selectedIndex=1;//hex
+				displayModulus();
+				displayPrivate();
+				displayP();
+				displayQ();
+				displayDMP1();
+				displayDMQ1();
+				displayCoeff();
+			}
+			private function populate1024():void {
+				var exp:String = "10001";
+				var mod:String = "c464c472dbcc46df4f411cc9b34c2fb6b39519668433b02cb934487738536e2b3b59a94163c3e903c91aa72e80a900fb9847c05fd5ab7dc1cfd0d6bb115151f45d2233827e58d4fec176c532d70f08e41d8f897c2b8cd4b17926675e5b19900a74050a69785f9f76aadcd30d15a14603463709cfcb76aa1f999bf092ed64a22f";
+				var pri:String = "44b600a932cf5088768110625d31ad8bdd5eafe9571d8268d34f407f3d9caaf1c32d067393450ab4415aeadcf134afdc5695dbef6ba1393962cced23bbd658b669854c4ec97e930aee4417d61531f8de62a3fd5a33c97a655dd9a7715aa49b0f76273798b0271e1b71cf0de5c74f17c09f28839b1ecdc6accb17967e7f86bb89";
+				var p:String = "f5afa45b1af0efe996393096d0386327a3286d6ac09c2b16d450821fca7d95ec75cbd55850696f47c52de5e91f70e5b2018c6f55bb2de62f3fd87857d7761863";
+				var q:String = "cca3629dba2fc34da05952faf06e0dccdfaa0b15865d59cc92112d869f47c92b63786a228533b157f94b6223ab48fba59070eac1abb3683c35236fc450300ac5";
+				var p1:String = "83213b04d14d558f83f984408a63fe3032ba2a243727632c2d27c73bf694af07651be503dcef5950a2224c3aefe80f00c228d567999ef6e3b31cf3a656be9667";
+				var q1:String = "707267421c891a5c917c03e8f82cc1508ea6b5a88248d18b63c824a810e63558ae3400be2f4b946baf05094c6856965107e9c455dfaf99db5ba7b946ba796bb1";
+				var co:String = "7bfb85313a4eda9e60062f8713be540186d562854ae3202f65414dfcc18012f403e5088211bb61ee43767d86caefe870c28c99f317639bc5bacfc0f26ae92113";
+				exponent.text = exp;
+				currentModulus = mod;
+				currentPrivate = pri;
+				currentP = p;
+				currentQ = q;
+				currentDMP1 = p1;
+				currentDMQ1 = q1;
+				currentCoeff = co;
+				modFormat.selectedIndex=1;//hex
+				displayModulus();
+				displayPrivate();
+				displayP();
+				displayQ();
+				displayDMP1();
+				displayDMQ1();
+				displayCoeff();
+			}
+			private function populate512():void {
+				var exp:String = "10001";
+				var mod:String = "66f0d7a85d710aed4f75dd06491b6bb82fb228aefc17a570da6c2de4b2459f73c701b131463b230d8837b98f8d514a0c7e8ebce0c507606fc28c4814496cda43";
+				var pri:String = "99005f895f59256493361bcdbbdb85bfbd249053855da0089c9d2d993d5f3e1e670dd722befeeebbc6ebd9f122351565b2552c95c34351e003f7a9c5fccf901";
+				var p:String = "cda139b9e9049e7b9ce8245116e824029a5ccd1df1ca2f9c3cc6293e38077a93";
+				var q:String = "80281fdfed1a79fcc0d2050548e57862d9468b3ba29039d0f130f9ab9488ff91";
+				var p1:String = "b94f838b5440926689f7f6ca911f315c9b29e8bc04ab960e72028f26802dd53b";
+				var q1:String = "15742219df5c4e4d848de3ef458bbc8277b2fa7dea31d0abeca471374aef4031";
+				var co:String = "5289ba8bbfb0aa2173494ecd333b83f1ad1ae8d18023ac9ab4eaf695a4506861";
+				exponent.text = exp;
+				currentModulus = mod;
+				currentPrivate = pri;
+				currentP = p;
+				currentQ = q;
+				currentDMP1 = p1;
+				currentDMQ1 = q1;
+				currentCoeff = co;
+				modFormat.selectedIndex=1;//hex
+				displayModulus();
+				displayPrivate();
+				displayP();
+				displayQ();
+				displayDMP1();
+				displayDMQ1();
+				displayCoeff();
+			}
+
+			private function generate(bits:uint):void {
+				var exp:String = "10001";
+				var rsa:RSAKey = RSAKey.generate(bits, exp);
+				exponent.text = exp;
+				currentModulus = rsa.n.toString();
+				currentPrivate = rsa.d.toString();
+				currentP = rsa.p.toString();
+				currentQ = rsa.q.toString();
+				currentDMP1 = rsa.dmp1.toString();
+				currentDMQ1 = rsa.dmq1.toString();
+				currentCoeff = rsa.coeff.toString();
+				modFormat.selectedIndex = 1;//hex
+				displayModulus();
+				displayPrivate();
+				displayP();
+				displayQ();
+				displayDMP1();
+				displayDMQ1();
+				displayCoeff();
+			}
+
+
+			private function getField(storage:String, combo:ComboBox, box:TextArea):String {
+				if (storage!=null) return storage;
+				var format:String = String(combo.selectedItem.@value);
+				switch (format) {
+					case "hex": return box.text;
+					case "b64": return Hex.fromArray(Base64.decodeToByteArray(box.text));
+					default:
+						return Hex.fromString(box.text);
+				}
+			}
+
+			private function getExponent():String {
+				return exponent.text;
+			}
+			private function getModulus():String {
+				return getField(currentModulus, modFormat, modulus);
+			}
+			private function getPrivate():String {
+				return getField(currentPrivate, privateFormat, privateExponent);
+			}
+			private function getP():String {
+				return getField(currentP, pFormat, p);
+			}
+			private function getQ():String {
+				return getField(currentQ, qFormat, q);
+			}
+			private function getDMP1():String {
+				return getField(currentDMP1, dmp1Format, dmp1);
+			}
+			private function getDMQ1():String {
+				return getField(currentDMQ1, dmq1Format, dmq1);
+			}
+			private function getCoeff():String {
+				return getField(currentCoeff, coeffFormat, coeff);
+			}
+			private function getInput():ByteArray {
+				return Hex.toArray(getField(currentInput, inputFormat, input));
+			}
+			private function getResult():ByteArray {
+				return Hex.toArray(getField(currentResult, outputFormat, output));
+			}
+
+			private function encrypt():void {
+				var rsa:RSAKey = RSAKey.parsePublicKey(getModulus(), exponent.text);
+				var data:ByteArray = getInput();
+				var dst:ByteArray = new ByteArray;
+				rsa.encrypt(data, dst, data.length);
+				currentResult = Hex.fromArray(dst);
+				displayOutput();
+			}
+			private function decrypt():void {
+				var rsa:RSAKey = RSAKey.parsePrivateKey(getModulus(), getExponent(), getPrivate(), getP(), getQ(), getDMP1(), getDMQ1(), getCoeff());
+				var data:ByteArray = getResult();
+				var dst:ByteArray = new ByteArray;
+				rsa.decrypt(data, dst, data.length);
+				currentInput = Hex.fromArray(dst);
+				displayInput();
+			}
+
+			private function displayField(storage:String, combo:ComboBox, box:TextArea):void {
+				if (storage==null) return;
+				var txt:String;
+				var format:String = String(combo.selectedItem.@value);
+				switch (format) {
+					case "hex": txt = storage; break;
+					case "b64": txt = linebrk(Base64.encodeByteArray(Hex.toArray(storage)), 60); break;
+					default:
+						txt = Hex.toString(storage);
+				}
+				box.text = txt;
+			}
+
+			private function displayModulus():void {
+				displayField(currentModulus, modFormat, modulus);
+			}
+			private function displayPrivate():void {
+				displayField(currentPrivate, privateFormat, privateExponent);
+			}
+			private function displayP():void {
+				displayField(currentP, pFormat, p);
+			}
+			private function displayQ():void {
+				displayField(currentQ, qFormat, q);
+			}
+			private function displayDMP1():void {
+				displayField(currentDMP1, dmp1Format, dmp1);
+			}
+			private function displayDMQ1():void {
+				displayField(currentDMQ1, dmq1Format, dmq1);
+			}
+			private function displayCoeff():void {
+				displayField(currentCoeff, coeffFormat, coeff);
+			}
+ 			private function displayInput():void {
+ 				displayField(currentInput, inputFormat, input);
+ 			}
+			private function displayOutput():void {
+				displayField(currentResult, outputFormat, output);
+			}
+			
+	 		private function linebrk(s:String,n:uint):String {
+			  var ret:String = "";
+			  var i:int = 0;
+			  while(i + n < s.length) {
+			    ret += s.substring(i,i+n) + "\n";
+			    i += n;
+			  }
+			  return ret + s.substring(i,s.length);
+			}
+			
+		]]>
+	</mx:Script>
+</mx:Canvas>

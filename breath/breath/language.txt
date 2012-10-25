@@ -1,0 +1,98 @@
+Language Reference
+See the extended reference for more advanced features of the Arduino languages and the libraries page for interfacing with particular types of hardware. 
+
+
+Arduino programs can be divided in three main parts: structure, values (variables and constants), and functions. The Arduino language is based on C/C++. 
+
+
+Structure
+setup() 
+loop() 
+
+Control Structures
+if 
+if...else 
+for 
+switch case 
+while 
+do... while 
+break 
+continue 
+return 
+
+Further Syntax
+; (semicolon) 
+{} (curly braces) 
+// (single line comment) 
+/* */ (multi-line comment) 
+
+Arithmetic Operators
+= (assignment) 
++ (addition) 
+- (subtraction) 
+* (multiplication) 
+/ (division) 
+% (modulo) 
+
+Comparison Operators
+== (equal to) 
+!= (not equal to) 
+< (less than) 
+> (greater than) 
+<= (less than or equal to) 
+>= (greater than or equal to) 
+
+Boolean Operators
+&& (and) 
+|| (or) 
+! (not) 
+
+Compound Operators
+++ (increment) 
+-- (decrement) 
++= (compound addition) 
+-= (compound subtraction) 
+*= (compound multiplication) 
+/= (compound division) 
+
+Variables
+Variables are expressions that you can use in programs to store values, such as a sensor reading from an analog pin. 
+
+
+Constants
+Constants are particular values with specific meanings. 
+
+
+HIGH | LOW 
+INPUT | OUTPUT 
+true | false 
+
+Integer Constants 
+
+Data Types
+Variables can have various types, which are described below. 
+
+
+boolean 
+char 
+byte 
+int 
+unsigned int 
+long 
+unsigned long 
+float 
+double 
+string 
+array 
+void 
+
+Conversion
+char() 
+byte() 
+int() 
+long() 
+float() 
+
+Reference
+ASCII chart 
+ 

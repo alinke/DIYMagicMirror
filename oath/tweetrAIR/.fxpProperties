@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<fxpProperties abbreviated="false" authoringTool="Flex Builder" compiles="true" parentProject="474698e9-0219-488e-b303-954a3446be37" projectUUID="474698e9-0219-488e-b303-954a3446be37" sdkVersion="4.0.0" uuid="a8060f98-2928-41b4-b307-aa70c3113c9d" version="4">
+  <projects/>
+  <src>
+    <linked isMain="false" location="D:/LIBRARY/Flash/Classes/as3/doomsdayconsole106a" path="/linked-src/doomsdayconsole106a" position="0" uuid="a8060f98-2928-41b4-b307-aa70c3113c9d"/>
+  </src>
+  <swc>
+    <linked location="sdkPlaceHolder" path="sdkPlaceHolder" position="0" uuid="a8060f98-2928-41b4-b307-aa70c3113c9d"/>
+    <linked location="D:/WORK/Libraries/tweetrAIR/libs" path="/libs" position="1" uuid="a8060f98-2928-41b4-b307-aa70c3113c9d"/>
+    <linked location="D:/LIBRARY/Flash/SWCs/as3/as3crypto.swc" path="/linked-swc/as3crypto.swc" position="2" uuid="a8060f98-2928-41b4-b307-aa70c3113c9d"/>
+  </swc>
+  <misc/>
+  <theme/>
+</fxpProperties>

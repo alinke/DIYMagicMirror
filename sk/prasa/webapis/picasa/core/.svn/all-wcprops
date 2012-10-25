@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/407/trunk/src/sk/prasa/webapis/picasa/core
+END
+Tags.as
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/core/Tags.as
+END
+Contacts.as
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/core/Contacts.as
+END
+MethodHelper.as
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/407/trunk/src/sk/prasa/webapis/picasa/core/MethodHelper.as
+END
+Auth.as
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/407/trunk/src/sk/prasa/webapis/picasa/core/Auth.as
+END
+Albums.as
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/core/Albums.as
+END
+Community.as
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/core/Community.as
+END
+Comments.as
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/core/Comments.as
+END
+Custom.as
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/core/Custom.as
+END
+Photos.as
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/381/trunk/src/sk/prasa/webapis/picasa/core/Photos.as
+END

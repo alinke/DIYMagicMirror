@@ -1,0 +1,17 @@
+******** DIY Magic Mirror LINUX Installation *********
+
+Tested on UBUNTU 8 and 9
+
+install-mirror.sh is a simple command line script that:
+
+1. Installs the Synaptic ser2net package (serial proxy server) and sets it to run automatically on start-up
+2. Copies /opt/DIY Magic Mirror/mirror/share/linux/ser2net.conf to /etc (this is the ser2net config file needed to run the magic mirror)
+3. Sets the /opt/DIY Magic Mirror/mirror/mirror.xml file to write access
+
+After running this script, you will be able to run the Magic Mirror program manually by clicking its icon
+
+Follow these steps to setup the Magic Mirror program to startup automatically:
+
+a. From Ubuntu menu bar, click < System > , < Preferences > , < Startup Applications >
+b. Add a new item with this command line: '/opt/DIY Magic Mirror'/'mirror'/bin/'mirror'
+

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/**
+ * HashTab
+ * 
+ * A UI Component that allows one to quickly test the hashing functions
+ * made available in the AS3 Crypto library.
+ * Copyright (c) 2007 Henri Torgemane
+ * 
+ * See LICENSE.txt for full license information.
+ */
+-->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" label="Hash" width="100%" height="100%">
+	<mx:Label text="Hash Function:" left="10" top="10"/>
+	<mx:ComboBox id="hashType" labelField="@label" left="106" top="8">
+	<mx:dataProvider>
+		<mx:XMLList>
+			<item label="SHA-256" value="sha256"/>
+			<item label="SHA-224" value="sha224"/>
+			<item label="SHA-1" value="sha1"/>
+			<item label="MD5" value="md5"/>
+			<item label="MD2" value="md2"/>
+		</mx:XMLList>
+	</mx:dataProvider>
+	</mx:ComboBox>
+	<mx:Label text="Input Format:" left="10" top="36"/>
+	<mx:ComboBox id="inputFormat" labelField="@label" left="101" top="34">
+	<mx:dataProvider>
+		<mx:XMLList>
+			<item label="Text" value="text"/>
+			<item label="Hex" value="hex"/>
+			<item label="Base64" value="b64"/>
+		</mx:XMLList>
+	</mx:dataProvider>
+	</mx:ComboBox>
+	<mx:TextArea id="input" left="10" right="10" top="62" bottom="148"/>
+	<mx:Label text="Output Format:" left="10" bottom="120"/>
+	<mx:ComboBox id="outputFormat" labelField="@label" bottom="118" left="109" change="displayOutput()">
+	<mx:dataProvider>
+		<mx:XMLList>
+			<item label="Text" value="text"/>
+			<item label="Hex" value="hex"/>
+			<item label="Base64" value="b64"/>
+		</mx:XMLList>
+	</mx:dataProvider>
+	</mx:ComboBox>
+	<mx:TextArea id="output" height="100" right="10" left="10" bottom="10" editable="false"/>
+	<mx:Button label="Compute Hash" right="10" click="computeHash()" bottom="118"/>
+	
+	<mx:Script>
+		<![CDATA[
+			import com.hurlant.util.Base64;
+			import com.hurlant.util.Hex;
+			import com.hurlant.crypto.Crypto;
+			import com.hurlant.crypto.hash.IHash;
+			
+			private var currentResult:ByteArray;
+			
+			private function computeHash():void {
+				// 1: get a IHash.
+				var hash:IHash = Crypto.getHash(hashType.selectedItem.@value);
+				// 2: get an input
+				var txt:String = input.text;
+				var data:ByteArray;
+				var format:String = String(inputFormat.selectedItem.@value);
+				switch (format) {
+					case "hex": data = Hex.toArray(txt); break;
+					case "b64": data = Base64.decodeToByteArray(txt); break;
+					default:
+						data = Hex.toArray(Hex.fromString(txt));
+				}
+				currentResult = hash.hash(data);
+				displayOutput();
+			}
+			private function displayOutput():void {
+				if (currentResult==null) return;
+				var txt:String;
+				var format:String = String(outputFormat.selectedItem.@value);
+				switch (format) {
+					case "hex": txt = Hex.fromArray(currentResult); break;
+					case "b64": txt = Base64.encodeByteArray(currentResult); break;
+					default:
+						txt = Hex.toString(Hex.fromArray(currentResult)); break;
+				}
+				trace("txt="+txt);
+				output.text = txt;
+			}
+		]]>
+	</mx:Script>
+</mx:Canvas>
