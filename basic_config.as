@@ -1,4 +1,4 @@
-package {
+﻿package {
 	import flash.display.MovieClip;
 	
 	import flash.net.*;
@@ -145,6 +145,7 @@ package {
 	private var twitter_rbg:RadioButtonGroup = new RadioButtonGroup("twitter_rbg");
 	private var twitter_mode_rbg:RadioButtonGroup = new RadioButtonGroup("twitter_mode_rbg");
 	private var TTS_rbg:RadioButtonGroup = new RadioButtonGroup("TTS_rbg");
+	private var TTS_languages_dropdown:ComboBox = new ComboBox(); //dropdown	
 	
 	private var tts_feature_radio_on:RadioButton = new RadioButton; 
 	private var tts_feature_radio_off:RadioButton = new RadioButton;
@@ -154,8 +155,11 @@ package {
 	
 	private var twitter_mode_radio_user:RadioButton = new RadioButton; 
 	private var twitter_mode_radio_search:RadioButton = new RadioButton;
+	private var twitter_mode_radio_mentions:RadioButton = new RadioButton;
+	
+	
 	private var tts_url:TextField = new TextField();
-	private var TTS_languages_dropdown:ComboBox = new ComboBox(); //dropdown	
+	//private var TTS_languages_dropdown:ComboBox = new ComboBox(); //dropdown	
 	private var proximity1_tts:TextField = new TextField();
 	private var proximity2_tts:TextField = new TextField();
 	private var proximity3_tts:TextField = new TextField();
@@ -211,6 +215,7 @@ package {
 	private var only_my_tweets_checkbox:CheckBox = new CheckBox();
 	private var do_not_speak_twitter_search_term_checkbox:CheckBox = new CheckBox();
 	private var tweetBreathalyzer_checkbox:CheckBox = new CheckBox();
+	private var StandAloneCheck:CheckBox = new CheckBox();
 	
 
 	private var TTS_Screen_Label:TextField = new TextField();
@@ -384,6 +389,7 @@ package {
 			
 			
 			TTSButton.addEventListener(MouseEvent.CLICK, TTSButtonEvent);
+			LanguageButton.addEventListener(MouseEvent.CLICK, TTSButtonEvent);
 			photoboothButton.addEventListener(MouseEvent.CLICK, photoboothButtonEvent);
 			goBackMain.addEventListener(MouseEvent.CLICK, goBackMainScreen);
 			
@@ -499,36 +505,7 @@ package {
 	private function setupComboBox():void { //setup the combo boxes
 
 			
-			TTS_languages_dropdown.addItem( { label: "English", data:"en" } );
-			TTS_languages_dropdown.addItem( { label: "Spanish", data:"es" } );
-			TTS_languages_dropdown.addItem( { label: "German", data:"de" } );
-			TTS_languages_dropdown.addItem( { label: "French", data:"fr" } );
-			TTS_languages_dropdown.addItem( { label: "Italian", data:"it" } );
-			TTS_languages_dropdown.addItem( { label: "Hindi", data:"hi" } );			
-			TTS_languages_dropdown.addItem( { label: "Afrikaans", data:"af" } );	
-			TTS_languages_dropdown.addItem( { label: "Czech", data:"cs" } );
-			TTS_languages_dropdown.addItem( { label: "Croatian", data:"hr" } );
-			TTS_languages_dropdown.addItem( { label: "Dutch", data:"nl" } );
-			TTS_languages_dropdown.addItem( { label: "Dannish", data:"da" } );
-			TTS_languages_dropdown.addItem( { label: "Finnish", data:"fi" } );
-			TTS_languages_dropdown.addItem( { label: "Greek", data:"el" } );
-			TTS_languages_dropdown.addItem( { label: "Hatian Creole", data:"ht" } );
-			TTS_languages_dropdown.addItem( { label: "Hungarian", data:"hu" } );
-			TTS_languages_dropdown.addItem( { label: "Indonesian", data:"id" } );
-			TTS_languages_dropdown.addItem( { label: "Islandic", data:"is" } );
-			TTS_languages_dropdown.addItem( { label: "Latvian", data:"lv" } );
-			TTS_languages_dropdown.addItem( { label: "Macedonian", data:"mk" } );
-			TTS_languages_dropdown.addItem( { label: "Norweigen", data:"no" } );
-			TTS_languages_dropdown.addItem( { label: "Polish", data:"pl" } );
-			TTS_languages_dropdown.addItem( { label: "Portugese", data:"pt" } );
-			TTS_languages_dropdown.addItem( { label: "Romanian", data:"ro" } );
-			TTS_languages_dropdown.addItem( { label: "Serbian", data:"sr" } );	
-			TTS_languages_dropdown.addItem( { label: "Slovak", data:"sk" } );
-			TTS_languages_dropdown.addItem( { label: "Russian", data:"ru" } );
-			TTS_languages_dropdown.addItem( { label: "Swahili", data:"sw" } );
-			TTS_languages_dropdown.addItem( { label: "Swedish", data:"sv" } );
-			TTS_languages_dropdown.addItem( { label: "Turkish", data:"tr" } );
-			TTS_languages_dropdown.addItem( { label: "Vietnamese", data:"vi" } );
+			
 			
 			onoff_house_code_input.addItem( { label: "A", data:1 } );
 			onoff_house_code_input.addItem( { label: "B", data:2 } );
@@ -573,6 +550,37 @@ package {
 			
 			photobooth_PaperSize_dropdown.addItem( { label: "Photo Size 4 x 6", data:0 } );
 			photobooth_PaperSize_dropdown.addItem( { label: "Letter 8.5 x 11", data:1 } );
+			
+			TTS_languages_dropdown.addItem( { label: "English", data:"en" } );
+			TTS_languages_dropdown.addItem( { label: "Spanish", data:"es" } );
+			TTS_languages_dropdown.addItem( { label: "German", data:"de" } );
+			TTS_languages_dropdown.addItem( { label: "French", data:"fr" } );
+			TTS_languages_dropdown.addItem( { label: "Italian", data:"it" } );
+			TTS_languages_dropdown.addItem( { label: "Hindi", data:"hi" } );			
+			TTS_languages_dropdown.addItem( { label: "Afrikaans", data:"af" } );	
+			TTS_languages_dropdown.addItem( { label: "Czech", data:"cs" } );
+			TTS_languages_dropdown.addItem( { label: "Croatian", data:"hr" } );
+			TTS_languages_dropdown.addItem( { label: "Dutch", data:"nl" } );
+			TTS_languages_dropdown.addItem( { label: "Dannish", data:"da" } );
+			TTS_languages_dropdown.addItem( { label: "Finnish", data:"fi" } );
+			TTS_languages_dropdown.addItem( { label: "Greek", data:"el" } );
+			TTS_languages_dropdown.addItem( { label: "Hatian Creole", data:"ht" } );
+			TTS_languages_dropdown.addItem( { label: "Hungarian", data:"hu" } );
+			TTS_languages_dropdown.addItem( { label: "Indonesian", data:"id" } );
+			TTS_languages_dropdown.addItem( { label: "Islandic", data:"is" } );
+			TTS_languages_dropdown.addItem( { label: "Latvian", data:"lv" } );
+			TTS_languages_dropdown.addItem( { label: "Macedonian", data:"mk" } );
+			TTS_languages_dropdown.addItem( { label: "Norweigen", data:"no" } );
+			TTS_languages_dropdown.addItem( { label: "Polish", data:"pl" } );
+			TTS_languages_dropdown.addItem( { label: "Portugese", data:"pt" } );
+			TTS_languages_dropdown.addItem( { label: "Romanian", data:"ro" } );
+			TTS_languages_dropdown.addItem( { label: "Serbian", data:"sr" } );	
+			TTS_languages_dropdown.addItem( { label: "Slovak", data:"sk" } );
+			TTS_languages_dropdown.addItem( { label: "Russian", data:"ru" } );
+			TTS_languages_dropdown.addItem( { label: "Swahili", data:"sw" } );
+			TTS_languages_dropdown.addItem( { label: "Swedish", data:"sv" } );
+			TTS_languages_dropdown.addItem( { label: "Turkish", data:"tr" } );
+			TTS_languages_dropdown.addItem( { label: "Vietnamese", data:"vi" } );
 	}
 	
 	private function BuildUI():void {
@@ -612,7 +620,7 @@ package {
 		only_my_tweets_checkbox.y = 178.35;
 		only_my_tweets_checkbox.width = 204.15;
 		only_my_tweets_checkbox.height = 22;
-		only_my_tweets_checkbox.label = "Speak Only Tweets Entered by Me";
+		only_my_tweets_checkbox.label = "Just My Tweets";
 		addChild(only_my_tweets_checkbox);
 		only_my_tweets_checkbox.visible = true;
 		
@@ -624,13 +632,23 @@ package {
 		addChild(do_not_speak_twitter_search_term_checkbox);
 		do_not_speak_twitter_search_term_checkbox.visible = true;
 		
+		
+		
 		tweetBreathalyzer_checkbox.x = 439.90;
-		tweetBreathalyzer_checkbox.y = 226.55;
+		tweetBreathalyzer_checkbox.y = 258.35;
 		tweetBreathalyzer_checkbox.width = 186.85;
 		tweetBreathalyzer_checkbox.height = 22;
 		tweetBreathalyzer_checkbox.label = "Tweet My Breathalyzer Results";
 		addChild(tweetBreathalyzer_checkbox);
 		tweetBreathalyzer_checkbox.visible = true;
+		
+		StandAloneCheck.x = 428.90;
+		StandAloneCheck.y = 303;
+		StandAloneCheck.width = 590.05;
+		StandAloneCheck.height = 22;
+		StandAloneCheck.label = "Stand Alone Mode (For using Twitter feature without Magic Mirror hardware)";
+		addChild(StandAloneCheck);
+		StandAloneCheck.visible = true;
 		
 		SaveButton.addEventListener(MouseEvent.CLICK, saveValue); //this is the save button in the TTS screen
 		
@@ -652,16 +670,23 @@ package {
 		
 		twitter_mode_radio_user.group = twitter_mode_rbg;
 		twitter_mode_radio_search.group = twitter_mode_rbg;
+		twitter_mode_radio_mentions.group = twitter_mode_rbg;
 		
 		twitter_mode_radio_user.x = 439.90; 
 	    twitter_mode_radio_user.y = 179.35;
 		twitter_mode_radio_user.label = "";
+		
 		twitter_mode_radio_search.x = 439.90; 
 	    twitter_mode_radio_search.y = 203;
-		twitter_mode_radio_search.label = "";		
+		twitter_mode_radio_search.label = "";	
+		
+		twitter_mode_radio_mentions.x = 439.90; 
+	    twitter_mode_radio_mentions.y = 230.25;
+		twitter_mode_radio_mentions.label = "";	
 		
 		addChild (twitter_mode_radio_user);
-		addChild (twitter_mode_radio_search);		
+		addChild (twitter_mode_radio_search);
+		addChild (twitter_mode_radio_mentions);
 		
 		tts_feature_radio_on.group = TTS_rbg; 
 	    tts_feature_radio_off.group = TTS_rbg;
@@ -740,7 +765,7 @@ package {
 		tts_language_label.y = 60;
 		tts_language_label.width = 200;
 		tts_language_label.height = 18;
-		tts_language_label.text = "TTS Language";			
+		tts_language_label.text = "TTS/Twitter Language";			
 		addChild(tts_language_label);	
 		tts_language_label.visible = false;
 		
@@ -1845,16 +1870,40 @@ package {
 		}		
 		
 		
+		//if (myXML.twitter_mode == "user")  {
+			//twitter_mode_radio_user.selected = true;	
+			//twitter_search_term_input.enabled = false;
+			//do_not_speak_twitter_search_term_checkbox.enabled = false;
+		//}
+		//else {
+			//twitter_mode_radio_search.selected = true; //we're in twitter search mode
+			//twitter_username_input.enabled = false;
+			//twitter_password_input.enabled = false;
+			//only_my_tweets_checkbox.enabled = false;
+		//}
+		
+		if (myXML.stand_alone == "on") {
+			StandAloneCheck.selected = true ;
+		}
+		else {
+			StandAloneCheck.selected = false ;			
+		}
+		
 		if (myXML.twitter_mode == "user")  {
 			twitter_mode_radio_user.selected = true;	
 			twitter_search_term_input.enabled = false;
 			do_not_speak_twitter_search_term_checkbox.enabled = false;
 		}
-		else {
+		
+		if (myXML.twitter_mode == "search")  {
 			twitter_mode_radio_search.selected = true; //we're in twitter search mode
-			twitter_username_input.enabled = false;
-			//twitter_password_input.enabled = false;
 			only_my_tweets_checkbox.enabled = false;
+		}
+		
+		if (myXML.twitter_mode == "mentions")  {
+			twitter_mode_radio_mentions.selected = true; //we're in twitter search mode
+			only_my_tweets_checkbox.enabled = false;
+			twitter_search_term_input.enabled = false;
 		}
 		
 		  if (myXML.twitter_authenticated == "yes") {
@@ -1981,6 +2030,8 @@ package {
 					onoff_unit_code_input.selectedIndex = 0;
 					break;
 				}		
+				
+				
 			
 			var webcam_restemp2:String;
 			webcam_restemp2 =  myXML.photobooth_videoWidth;
@@ -2115,16 +2166,40 @@ package {
 	
 	
 	
+	//private function TwitterModeChanged(event:Event):void {    
+		//if (twitter_mode_radio_user.selected == true)  {  //we're in twitter user mode so grey out the search stuff
+		//	twitter_search_term_input.enabled = false;
+		//	do_not_speak_twitter_search_term_checkbox.enabled = false;
+		//	twitter_username_input.enabled = true;
+		//	only_my_tweets_checkbox.enabled = true;
+		//}
+		//else {
+		//	twitter_username_input.enabled = false;
+		//	only_my_tweets_checkbox.enabled = false;
+		//	twitter_search_term_input.enabled = true;
+		//	do_not_speak_twitter_search_term_checkbox.enabled = true;
+	//	}
+	//}
+	
 	private function TwitterModeChanged(event:Event):void {    
 		if (twitter_mode_radio_user.selected == true)  {  //we're in twitter user mode so grey out the search stuff
 			twitter_search_term_input.enabled = false;
 			do_not_speak_twitter_search_term_checkbox.enabled = false;
-			twitter_username_input.enabled = true;
+			//twitter_username_input.enabled = true;
 			//twitter_password_input.enabled = true;
+			//twitter_frequency_input.enabled = true;
 			only_my_tweets_checkbox.enabled = true;
 		}
-		else {
-			twitter_username_input.enabled = false;
+		
+		if (twitter_mode_radio_mentions.selected == true)  {  //we're in mentions mode
+			twitter_search_term_input.enabled = false;
+			do_not_speak_twitter_search_term_checkbox.enabled = false;
+			//twitter_password_input.enabled = false;
+			only_my_tweets_checkbox.enabled = false;
+		}
+		
+		if (twitter_mode_radio_search.selected == true)  {  //we're in mentions mode
+			twitter_username_input.enabled = false;  //we're in search mode
 			//twitter_password_input.enabled = false;
 			only_my_tweets_checkbox.enabled = false;
 			twitter_search_term_input.enabled = true;
@@ -2341,7 +2416,7 @@ package {
 			stock_good_threshold_input.text = myXML.stock_good_threshold;
 			stock_bad_threshold_input.text = myXML.stock_bad_threshold;
 			
-			if (reg_code_input.text == "add yours here") {
+			if (reg_code_input.text == "440537" || reg_code_input.text == "110534" || reg_code_input.text == "768223" || reg_code_input.text == "998765" || reg_code_input.text == "233229" || reg_code_input.text == "643229" || reg_code_input.text == "876233" ) {
 				registered.text = "REGISTERED"
 				reg_code_input.editable = false;
 				reg_code_input.enabled = false;
@@ -2519,7 +2594,7 @@ package {
 			myXML.tts_language = TTS_languages_dropdown.selectedItem.data;
 		}
 		
-		myXML.tts_url = tts_url.text;		
+		myXML.tts_url = tts_url.text;
 		
 		
 		if (tts_feature_radio_on.selected == true) {
@@ -2553,10 +2628,22 @@ package {
 		}
 		else {myXML.twitter_feature = "off"};			
 		
+		//if (twitter_mode_radio_user.selected == true)  {   //twitter username and password mode
+			//myXML.twitter_mode = "user";			
+		//}
+		//else {myXML.twitter_mode = "search"};		
+		
 		if (twitter_mode_radio_user.selected == true)  {   //twitter username and password mode
 			myXML.twitter_mode = "user";			
 		}
-		else {myXML.twitter_mode = "search"};			
+		
+		if (twitter_mode_radio_mentions.selected == true)  {   //twitter username and password mode
+			myXML.twitter_mode = "mentions";			
+		}
+		
+		if (twitter_mode_radio_search.selected == true)  {   //twitter username and password mode
+			myXML.twitter_mode = "search";			
+		}
 		
 		if (only_my_tweets_checkbox.selected == true) {
 			myXML.twitter_my_tweets_only = "on";
@@ -2588,6 +2675,13 @@ package {
 			myXML.tts_feature = "on"; 
 		}
 		else {myXML.tts_feature = "off";
+		}
+		
+		if (StandAloneCheck.selected == true) {  
+			myXML.stand_alone = "on";
+		}
+		else {
+			myXML.stand_alone = "off";	
 		}
 		
 		///*******************************
@@ -3335,19 +3429,19 @@ package {
 	private function CreateConfig():void {
 					
 			var newconfigXML:XML =
-			<mirror>
+<mirror>
   <mirror_mode>princess</mirror_mode>
   <verbose>no</verbose>
   <screen_mode>landscape0</screen_mode>
   <display_mode_preset>0</display_mode_preset>
   <idle_videos>on</idle_videos>
   <video_resolution>high</video_resolution>
-  <version>7.0</version>
+  <version>7.3</version>
   <digital_switches>on</digital_switches>
   <switch1>off</switch1>
   <switch2>off</switch2>
   <switch3>off</switch3>
-  <switch4>off</switch4>
+  <switch4>on</switch4>
   <switch5>on</switch5>
   <switch6>off</switch6>
   <debounce>on</debounce>
@@ -3398,20 +3492,20 @@ package {
   <analog_input2_pin>2</analog_input2_pin>
   <analog_input3_pin>3</analog_input3_pin>
   <hardware_mode_select_pin>4</hardware_mode_select_pin>
-  <alcohol_sensor>on</alcohol_sensor>
+  <alcohol_sensor>off</alcohol_sensor>
   <alcohol_no_switch>off</alcohol_no_switch>
   <alcohol_no_switch_interval>1000</alcohol_no_switch_interval>
   <alcohol_no_switch_trigger_delta>100</alcohol_no_switch_trigger_delta>
   <alcohol_sensor_pin>1</alcohol_sensor_pin>
-  <alcohol_baseline>100</alcohol_baseline>
-  <alcohol_baseline_difference_allowance>100</alcohol_baseline_difference_allowance>
-  <alcohol_level1>100</alcohol_level1>
+  <alcohol_baseline>300</alcohol_baseline>
+  <alcohol_baseline_difference_allowance>200</alcohol_baseline_difference_allowance>
+  <alcohol_level1>300</alcohol_level1>
   <alcohol_level2>300</alcohol_level2>
   <alcohol_level3>500</alcohol_level3>
   <alcohol_countdown>5</alcohol_countdown>
   <alcohol_text_duration>6</alcohol_text_duration>
   <alcohol_display_value>off</alcohol_display_value>
-  <beer_image_x>634</beer_image_x>
+  <beer_image_x>684</beer_image_x>
   <beer_image_y>87</beer_image_y>
   <beer_image_rotation>0</beer_image_rotation>
   <beer_image_scale>1</beer_image_scale>
@@ -3511,8 +3605,8 @@ package {
   <frame_path>images/frame5.png</frame_path>
   <frame_path>images/frame6.png</frame_path>
   <stand_alone>off</stand_alone>
-  <stand_alone_weather>on</stand_alone_weather>
-  <stand_alone_stock>on</stand_alone_stock>
+  <stand_alone_weather>off</stand_alone_weather>
+  <stand_alone_stock>off</stand_alone_stock>
   <thoughts_image_x>550</thoughts_image_x>
   <thoughts_image_y>260</thoughts_image_y>
   <thoughts_image_rotate>0</thoughts_image_rotate>
@@ -3781,11 +3875,11 @@ package {
   <tts_feature>on</tts_feature>
   <tts_avatar>off</tts_avatar>
   <tts_charlimit>100</tts_charlimit>
-  <tts_url>http://translate.google.com/translate_tts?q=</tts_url>
+  <tts_url>http://translate.google.co.uk/translate_tts?q=</tts_url>
   <tts_language>en</tts_language>
   <tts_sendheader>on</tts_sendheader>
   <tts_headername>Referer</tts_headername>
-  <tts_headervalue>http://translate.google.com/</tts_headervalue>
+  <tts_headervalue>http://translate.google.co.uk/</tts_headervalue>
   <proximity1_tts>Hi Jane, can you come closer pretty please</proximity1_tts>
   <proximity2_tts>You look great, have you lost some weight?</proximity2_tts>
   <proximity3_tts>Say you really look great today, is that a new shirt you're wearing?</proximity3_tts>
@@ -3925,7 +4019,7 @@ package {
 	
 	private function CheckConfigVersion():void {
 		//let's check and make sure the user doesn't have an old version of the config file
-			if (Number(myXML.version) < 7.0) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
+			if (Number(myXML.version) < 7.3) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
 				//AlertManager.createAlert(this, "Your configuration file was an older version and has been updated, your current settings have been maintained");
 				//before blowing the file away, let's read it into another XML so we have a record of the old settings
 				filestream.open(file, FileMode.READ);

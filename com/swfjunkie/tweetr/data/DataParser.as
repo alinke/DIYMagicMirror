@@ -1,3 +1,17 @@
+/*
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or 
+ *  (at your option) any later version.
+ * 
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.txt>.
+ */
 package com.swfjunkie.tweetr.data
 {
     import com.swfjunkie.tweetr.data.objects.CursorData;
@@ -218,7 +232,7 @@ package com.swfjunkie.tweetr.data
             
             var target:RelationData = new RelationData();
             target.type = RelationData.RELATION_TYPE_TARGET;
-            target.id = parseFloat(xml.target.id);
+            target.id = xml.target.id;
             target.screenName = xml.target.screen_name;
             target.following = TweetUtil.stringToBool(xml.target.following);
             target.followedBy = TweetUtil.stringToBool(xml.target.followed_by);
@@ -226,7 +240,7 @@ package com.swfjunkie.tweetr.data
             
             var source:RelationData = new RelationData();
             source.type = RelationData.RELATION_TYPE_SOURCE;
-            source.id = parseFloat(xml.source.id);
+            source.id = xml.source.id;
             source.screenName = xml.source.screen_name;
             source.following = TweetUtil.stringToBool(xml.source.following);
             source.followedBy = TweetUtil.stringToBool(xml.source.followed_by);
@@ -280,7 +294,7 @@ package com.swfjunkie.tweetr.data
                 if (node)
                 {
                     listData = new ListData();
-                    listData.id = parseFloat(node.id);
+                    listData.id = node.id;
                     listData.name = node.name;
                     listData.fullName = node.full_name;
                     listData.slug = node.slug;
@@ -433,7 +447,7 @@ package com.swfjunkie.tweetr.data
                 var str:String = entry.ns::id;
                 var index:Number = str.lastIndexOf(':');
                 
-                searchData.id = parseInt(str.substring(index+1, str.length-1));
+                searchData.id = str.substring(index+1, str.length-1);
                 searchData.text = entry.ns::title;        
                 searchData.createdAt = entry.ns::updated;
                 searchData.userProfileImage = entry.ns::link[1].@href;

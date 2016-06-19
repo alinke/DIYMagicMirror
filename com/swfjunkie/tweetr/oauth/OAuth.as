@@ -1,4 +1,18 @@
-﻿package com.swfjunkie.tweetr.oauth
+﻿/*
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or 
+ *  (at your option) any later version.
+ * 
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.txt>.
+ */
+package com.swfjunkie.tweetr.oauth
 {
     import com.hurlant.crypto.Crypto;
     import com.hurlant.crypto.hash.HMAC;
@@ -16,8 +30,12 @@
     import flash.net.URLVariables;
     import flash.utils.ByteArray;
     
-    //CONFIG::AIR
+    CONFIG::AIR
     import flash.html.HTMLLoader;
+    CONFIG::MOBILE
+    import flash.media.StageWebView;
+    CONFIG::MOBILE
+    import flash.events.LocationChangeEvent;
     
     /**
      * Dispatched when the OAuth has succesfully completed a Request.
@@ -41,7 +59,7 @@
         //  Class variables
         //
         //--------------------------------------------------------------------------
-        private static const OAUTH_DOMAIN:String = "http://twitter.com";
+        private static const OAUTH_DOMAIN:String = "https://api.twitter.com";
         private static const REQUEST_TOKEN:String = "/oauth/request_token";
         private static const AUTHORIZE:String = "/oauth/authorize";
         private static const ACCESS:String = "/oauth/access_token";
@@ -93,7 +111,7 @@
          */ 
         public var oauthTokenSecret:String = "";
         
-        private var _userId:String;
+        protected var _userId:String;
         /**
          * Get the twitter user_id (retrieval only available after successful user authorization)
          */ 
@@ -117,19 +135,19 @@
             _callbackURL = encodeURIComponent(value);
         }
         
-        private var _username:String;
+        protected var _userName:String;
         /**
-         * Get/set the twitter screen_name (retrieval only available after successful user authorization)
+         * Get/Set the twitter screen_name/username
+         * <b>NOTICE:</b> Setting the username to a different user
+         * than authorized via the tokens, may cause request to fail.
          */ 
         public function get username():String
         {
-            if (_username)
-                return _username;
-            return null;
+            return _userName;
         }
         public function set username(value:String):void
         {
-            _username = value;
+            _userName = value;
         }
         
         private var _serviceHost:String = OAUTH_DOMAIN;
@@ -162,8 +180,12 @@
          * <div class="airIcon"><b><font color="#00AA00">NEW</font></b> - <b>AIR only!</b> The HTMLLoader to be used to display the OAuth
          * Authentication Process from Twitter in.</div> 
          */ 
-      //  CONFIG::AIR
+        CONFIG::AIR
         public var htmlLoader:HTMLLoader;
+        
+        CONFIG::MOBILE
+        public var stageWebView:StageWebView;
+        
         //--------------------------------------------------------------------------
         //
         //  Additional getters and setters
@@ -272,7 +294,7 @@
          */ 
         override public function toString():String
         {
-            return "Username: "+_username+"\n"+
+            return "Username: "+_userName+"\n"+
                     "User Id: "+_userId+"\n"+
                     "OAuth Token: "+oauthToken+"\n"+
                     "OAuth Token Secret: "+oauthTokenSecret;
@@ -337,7 +359,7 @@
                     }
                     case "screen_name":
                     {
-                        _username = element[1];
+                        _userName = element[1];
                         break;
                     }
                 }
@@ -349,24 +371,34 @@
         //  Conditional Authorize Call Methods
         //------------------------------------------
         
-    //    CONFIG::WEB
-   //     private function callAuthorize(url:String):void
-   //     {
-   //         if (ExternalInterface.available)
-    //        {
-    //            ExternalInterface.addCallback("setVerifier", requestAccessToken);
-    //            ExternalInterface.call("OAuth.callAuthorize", url);
-    //        }
-    //    }
+        CONFIG::WEB
+        private function callAuthorize(url:String):void
+        {
+            if (ExternalInterface.available)
+            {
+                ExternalInterface.addCallback("setVerifier", requestAccessToken);
+                ExternalInterface.call("OAuth.callAuthorize", url);
+            }
+        }
         
         
-    //    CONFIG::AIR
+        CONFIG::AIR
         private function callAuthorize(url:String):void
         {
             if (htmlLoader)
             {
                 htmlLoader.addEventListener(Event.COMPLETE, handleDocumentComplete);
                 htmlLoader.load(new URLRequest(url));
+            }
+        }
+        
+        CONFIG::MOBILE
+        private function callAuthorize(url:String):void
+        {
+            if (stageWebView)
+            {
+                stageWebView.addEventListener(LocationChangeEvent.LOCATION_CHANGE, handleLocationChange);
+                stageWebView.loadURL(url);
             }
         }
         
@@ -400,7 +432,7 @@
             dispatchEvent(new OAuthEvent(OAuthEvent.ERROR, null, event.text));
         }
         
-      //  CONFIG::AIR
+        CONFIG::AIR
         private function handleDocumentComplete(event:Event):void
         {
             var sStr:String = "oauth_verifier=";
@@ -413,6 +445,23 @@
                 htmlLoader.removeEventListener(Event.COMPLETE, handleDocumentComplete);
                 verifier = location.substr(oAuthVerifierIndex + sStr.length, location.length);
                 htmlLoader = null;
+                requestAccessToken(verifier);
+            }
+        }
+        
+        CONFIG::MOBILE
+        private function handleLocationChange(event:LocationChangeEvent):void
+        {
+            var sStr:String = "oauth_verifier=";
+            var location:String = stageWebView.location;
+            var hasLocation:Boolean = stageWebView.location.indexOf(location) != -1;
+            var oAuthVerifierIndex:int = location.indexOf(sStr);
+            
+            if (hasLocation && oAuthVerifierIndex != -1)
+            {
+                stageWebView.removeEventListener(LocationChangeEvent.LOCATION_CHANGE, handleLocationChange);
+                verifier = location.substr(oAuthVerifierIndex + sStr.length, location.length);
+                stageWebView = null;
                 requestAccessToken(verifier);
             }
         }

@@ -1,4 +1,4 @@
-/*
+﻿/*
 Copyright (c) 2009 Yahoo! Inc.  All rights reserved.  
 The copyrights embodied in the content of this file are licensed under the BSD (revised) open source license
 */
@@ -219,11 +219,11 @@ The copyrights embodied in the content of this file are licensed under the BSD (
 	 	/**
 	 	 * Removes buttons
 	 	 */
-	 	public function removeChildren():void
-	 	{
-			_buttons.forEach(disableButtons);
-			_buttons = [];
-	 	}
+	 //	public function removeChildren():void
+	 //	{
+	//		_buttons.forEach(disableButtons);
+	//		_buttons = [];
+	 //	}
 	 	
 	 	/**
 	 	 * Positions each button after it has been resized.  Creates multiple rows if a 

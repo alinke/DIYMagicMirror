@@ -1,4 +1,4 @@
-package {
+﻿package {
 	import flash.display.MovieClip;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;	
@@ -81,7 +81,7 @@ package {
 	import flash.display.BitmapData;	
 	import flash.display.Bitmap;
 	import flash.display.Sprite;
-			
+				
 	import gs.easing.Cubic;	
 	import gs.TweenLite;	
 	
@@ -91,7 +91,7 @@ package {
 	
 	import com.swfjunkie.tweetr.Tweetr;
     import com.swfjunkie.tweetr.oauth.OAuth;
-    import com.swfjunkie.tweetr.oauth.events.OAuthEvent;
+   import com.swfjunkie.tweetr.oauth.events.OAuthEvent;
 	
 	import com.swfjunkie.tweetr.events.TweetEvent;
 	import com.swfjunkie.tweetr.utils.TweetUtil;
@@ -117,6 +117,18 @@ package {
 	import com.pfp.events.JPEGAsyncCompleteEvent;
 	import sk.yoz.image.ImageResizer;
 	import sk.yoz.math.ResizeMath;
+	
+	import models.MentionModel;
+	import models.SearchModel;
+	import com.adobe.serialization.json.JSON;
+	import com.adobe.serialization.json.JSONParseError;
+	
+	import isle.susisu.twitter.Twitter;
+	import isle.susisu.twitter.TwitterRequest;
+	import isle.susisu.twitter.TwitterTokenSet;
+	import isle.susisu.twitter.events.TwitterErrorEvent;
+	import isle.susisu.twitter.events.TwitterRequestEvent;
+	import isle.susisu.twitter.utils.objectToQueryString;
 	
 				
 	public class mirror extends MovieClip {
@@ -475,6 +487,8 @@ package {
 	  private var lipsync_clip:String;
       	
 	//  private var tweetr:Tweetr;
+	
+	
     
 	
 	 private var custom_audio:String;
@@ -809,6 +823,9 @@ package {
     private var tweetr:Tweetr;
 	private var oauth:OAuth;
     private var htmlLoader:HTMLLoader;
+	
+	private var request:TwitterRequest;
+	private	var complete:Function;
 	
 	//private var url_door:String = "sounds/doorbell.mp3"; //not using these anymore but if need to track an event when sound is done playing will need this
   	//private var doorbell_sound:Sound = new Sound();
@@ -1196,6 +1213,19 @@ package {
 	//private var mirror_mode:String;
 	private var CountdownTimerCounter:int;
 	
+	private var _twitter:Twitter;
+		private var _token:TwitterTokenSet;
+
+		private var _stage:Stage;
+		
+		private var _mentionedSinceID:String;
+		private var _mentions:Vector.<MentionModel>;
+		private var _mentionChecker:Timer;
+		
+		private var _searchSinceID:String;
+		private var _search:Vector.<SearchModel>;
+		private var __searchChecker:Timer;
+	
 	
 	//*****************************************************
 	
@@ -1353,7 +1383,7 @@ package {
 			
 			//sw_version = "Version " + myXML.version;
 			//this is the software version
-			sw_version = "Version 7.0";
+			sw_version = "Version 7.3";
 			
 			//use this code later when a new config XML needs to be created
 			
@@ -1493,7 +1523,7 @@ package {
 			trace (reg_code);
 			x10_sleep1000 = new Timer(x10_wait,1);		//default for x10_wait is 1000
 			
-			if (reg_code == "add yours here") {
+			if (reg_code == "440537" || reg_code == "110534" || reg_code == "768223" || reg_code == "998765" || reg_code == "233229" || reg_code == "643229" || reg_code == "876233" ) {
 				demo.visible = false;
 				removeChild(demo);
 				registered = 1;
@@ -2260,8 +2290,12 @@ package {
 		////************************************************************		
 		myVid.addEventListener(MetadataEvent.CUE_POINT , NavigationCuePoints);
 		myVid.addEventListener(Event.COMPLETE, onClipDone);  // call the idle loop when a clip has finished playing
-		myVid.addEventListener(VideoEvent.SEEKED, onSeekedEvent); // Listen for seeked event
-		
+		//myVid.addEventListener(VideoEvent.SEEKED, onSeekedEvent); // Listen for seeked event
+		myVid.addEventListener(fl.video.VideoEvent.SEEKED, onSeekedEvent);
+		 
+		 
+		 
+		 
 
 		x10_label.text = String("x10 Command");
 		ArduinoFound.text = String("Arduino Not Found! Check to see if serial proxy is running.");
@@ -2659,43 +2693,65 @@ package {
 	  
 	   if (twitter_feature == "on") {			
 			
+			TwitterInit();
+			
+			//this was all the old twitter code that used the deprecated library tweetr
 			///**** Now we need to authenticate
-			if (twitter_authenticated == "yes") {  //then we already have done the Oath so continue
+			//if (twitter_authenticated == "yes") {  //then we already have done the Oath so continue
 				
 				
-				tweetr = new Tweetr();         
+			//var request:TwitterRequest;
+			//var complete:Function;
+
+			//if (_token && _token.oauthToken.length)
+			//{
+				//_twitter = new Twitter(myXML.twitter_consumerKey, myXML.twitter_consumerSecret, myXML.twitter_oauthToken, myXML.twitter_oauthTokenSecret);
+				//request = _twitter.account_verifyCredentials();
+				//complete = _verifyCompleteHandler;
+			//} else
+			//{
+				//_twitter = new Twitter(myXML.twitter_consumerKey, myXML.twitter_consumerSecret);
+				//request = _twitter.oauth_requestToken();
+				//complete = _tokenCompleteHandler;
+			//}
+
+			//_setHandlersForRequest(request, complete);
+				
+				
+				
+				
+				//tweetr = new Tweetr();         
 			    //tweetr.serviceHost = "http://diymagicmirror.com/proxy"; 
 				// !!!!! if the tweet function ever stops working, be sure and check first that the proxy server is still up and running, it won't work without that!!!!!
-				tweetr.serviceHost = myXML.twitter_serviceHost;
-				myXML.twitter_serviceHost;  
-			    oauth = new OAuth();
+				//tweetr.serviceHost = myXML.twitter_serviceHost;
+				//myXML.twitter_serviceHost;  
+			   // oauth = new OAuth();
 				
-				oauth.consumerKey = myXML.twitter_consumerKey;
-				oauth.consumerSecret = myXML.twitter_consumerSecret;
-				oauth.oauthToken = myXML.twitter_oauthToken;
-				oauth.oauthTokenSecret =  myXML.twitter_oauthTokenSecret;
+				//oauth.consumerKey = myXML.twitter_consumerKey;
+				//oauth.consumerSecret = myXML.twitter_consumerSecret;
+				//oauth.oauthToken = myXML.twitter_oauthToken;
+				//oauth.oauthTokenSecret =  myXML.twitter_oauthTokenSecret;
 				
 				//oauth.consumerKey = "UqwagrMLQEwGsBfmxzxg";  
 				//oauth.consumerSecret = "uvEa0gbwFoPlUTrhirhhK0OATpLG7mXqeDSZvZ0UtI";
 				//oauth.oauthToken = "268849169-4OU1Y5L1VleUgVxtqkuhubCbAYSWdEPar8onLU0w";
 				//oauth.oauthTokenSecret = "t8vSfkgOARvOhOlpKSGbZwpQxu2EGQQomjCm7Kr2k";		
 				
-				tweetr.oAuth = oauth;				
-				tweetr.verifyCredentials();
+				//tweetr.oAuth = oauth;				
+				//tweetr.verifyCredentials();
 				//trace ("went to oath routine");
-				trace (oauth.toString());
+				//trace (oauth.toString());
 				//tweetr.updateStatus("test tweet from magic mirror 15");
 								
-				tweetr.addEventListener(TweetEvent.COMPLETE, handleTweetsLoaded);
-				tweetr.addEventListener(TweetEvent.FAILED, handleTweetsFail);
-				tweet_button.addEventListener(MouseEvent.CLICK, Speak_Tweet_Event_MouseClick);
+				///tweetr.addEventListener(TweetEvent.COMPLETE, handleTweetsLoaded);
+				//tweetr.addEventListener(TweetEvent.FAILED, handleTweetsFail);
+				//tweet_button.addEventListener(MouseEvent.CLICK, Speak_Tweet_Event_MouseClick);
 				
+							
 				
-				
-				
-				TwitterTimer = new Timer(twitter_frequency * 1000); //its entered in seconds in the admin screen so convert to ms
-				TwitterTimer.addEventListener(TimerEvent.TIMER, GetLatestTweet);				
-				TwitterTimer.start();
+				//TwitterTimer = new Timer(twitter_frequency * 1000); //its entered in seconds in the admin screen so convert to ms
+				//TwitterTimer.addEventListener(TimerEvent.TIMER, GetLatestTweet);				
+				//TwitterTimer.start();
 				
 				//**** old Twitter code with Basic Auth
 				//tweetr = new Tweetr();					
@@ -2704,12 +2760,14 @@ package {
 				//tweetr.password = twitter_password;	
 				////**********************************
 			}
-			else {
-				trace("twitter feature is on but oath has not been done");
-				AlertManager.createAlert(this, "The Twitter feature is turned on but you have not linked your Twitter account yet. Exit this program and run the Magic Mirror Configuration program to link your Twitter account and then re-run the Magic Mirror.");
+			//else {
+				//trace("twitter feature is on but oath has not been done");
+				//AlertManager.createAlert(this, "The Twitter feature is turned on but you have not linked your Twitter account yet. Exit this program and run the Magic Mirror Configuration program to link your Twitter account and then re-run the Magic Mirror.");
 				
-			}
-	  }
+			//}
+	 // }
+	  
+	  
 	 
 	// addEventListener(Event.ENTER_FRAME, processSound);
 	
@@ -2894,6 +2952,8 @@ package {
 	} // ********end RunMirror initMediaPlayer function ***********
 	     // wait for arduino to init and get data before calling the video select routines		
 				
+
+	
 	private function BuildUI():void {
 		LabelTextFormat.font = "Arial";
 		LabelTextFormat.size = "12";
@@ -3183,7 +3243,7 @@ package {
 	//}
 	
 	private function StandAloneStartup():void {
-			Mouse.show();
+			Mouse.show(); //the mouse pointer normally does not show up in normal mode
 			initial_values_no_arduino();
 			
 			if (stand_alone_weather == "on") {
@@ -3863,6 +3923,8 @@ package {
 					photobooth_thanksSoundPath = photobooth_thanksSoundPathp;
 				}
 				
+			trace("photobooth intro sound path: " + photobooth_IntroSoundPath);
+				
 			initPhotoboothSounds(); //re-init the photobooth sounds
 			
 			trace ("idle clip" + idle_clip);
@@ -4294,37 +4356,53 @@ package {
 		
 		{			 
 				sound_playing = 1; //set the sound playing flag so something else doesn't play			
-							
-				tts_stream = new Sound(); 
-				var loader:URLLoader = new URLLoader();
-				configureListeners(loader);
-				//var header:URLRequestHeader = new URLRequestHeader("Referer","http://translate.google.com/");		
-				var request:URLRequest = new URLRequest();
-				if (tts_sendheader != "off") {
-					var header:URLRequestHeader = new URLRequestHeader(tts_headername,tts_headervalue);			
-					request = new URLRequest(generateAudioURL(value));
-					request.method = URLRequestMethod.GET;
-					request.requestHeaders.push(header);
-				}
-				else {
-					request = new URLRequest(generateAudioURL(value));
-				}
-					 
-				try {
-					loader.load(request);
-				} catch (error:Error) {
-					trace("Unable to load TTS");
-				}
+				
+				if (tts_stream !=null) {
+						tts_stream = new Sound(); //try catch, problem is tts stream is null
 						
-				tts_stream.load(request);
-				tts_channel = tts_stream.play();						
-				tts_channel.addEventListener(Event.SOUND_COMPLETE,TTSSoundDone);			
+						var loader:URLLoader = new URLLoader();
+						configureListeners(loader);
+						//var header:URLRequestHeader = new URLRequestHeader("Referer","http://translate.google.com/");		
+						var request:URLRequest = new URLRequest();
+						if (tts_sendheader != "off") {
+							var header:URLRequestHeader = new URLRequestHeader(tts_headername,tts_headervalue);			
+							request = new URLRequest(generateAudioURL(value));
+							request.method = URLRequestMethod.GET;
+							request.requestHeaders.push(header);
+						}
+						else {
+							request = new URLRequest(generateAudioURL(value));
+						}
+						 
+						try {
+							loader.load(request);
+						} catch (error:Error) {
+							trace("Unable to load TTS");
+							//ResetVideoFlags();
+							//return;
+						}
 								
-				if (myXML.lipsync_feature == "on") {
-					LipsyncTimer.addEventListener(TimerEvent.TIMER,  processSound);
-					LipsyncTimer.start();
-				}
-			
+						tts_stream.load(request);
+						tts_channel = tts_stream.play();						
+						tts_channel.addEventListener(Event.SOUND_COMPLETE,TTSSoundDone);			
+						tts_channel.addEventListener (IOErrorEvent.IO_ERROR, TTSPlayError);
+										
+						if (myXML.lipsync_feature == "on") {
+							LipsyncTimer.addEventListener(TimerEvent.TIMER,  processSound);
+							LipsyncTimer.start();
+						}
+						}
+					else {
+						trace("say tts stream was null so we had to exit out early");
+						trace("went to speak tweet error handler");
+						switch_mode();
+						ResetVideoFlags();
+					}
+					//} catch (error:Error) {
+						//trace("error loading tts_stream");
+						//ResetVideoFlags();
+						//return;
+					//}
 		}
 		
 		private function say_breathalyzer(value:String):void
@@ -4370,7 +4448,8 @@ package {
 		
 		{			
 			//var generatedString:String = 'http://translate.google.com/translate_tts?q=' + value + '&tl=en';			
-			var generatedString:String = 'http://translate.google.com/translate_tts?q=' + value + '&tl=' + tts_language;				
+			//var generatedString:String = 'http://translate.google.co.uk/translate_tts?q=' + value + '&tl=' + tts_language;		
+			var generatedString:String = tts_url + value + '&tl=' + tts_language;				
 			return generatedString;
 		}
 		
@@ -4428,13 +4507,45 @@ package {
 			
 		}
 		
+		private function TwitterInit():void   {
+		///**** Now we need to authenticate
+			if (twitter_authenticated == "yes") {  //then we already have done the Oath so continue
+				
+				
+			//var request:TwitterRequest;
+			//var complete:Function;
+
+			//if (_token && _token.oauthToken.length)
+			//{
+				_twitter = new Twitter(myXML.twitter_consumerKey, myXML.twitter_consumerSecret, myXML.twitter_oauthToken, myXML.twitter_oauthTokenSecret);
+				request = _twitter.account_verifyCredentials();
+				complete = _verifyCompleteHandler;
+			//} else
+			//{
+				//_twitter = new Twitter(myXML.twitter_consumerKey, myXML.twitter_consumerSecret);
+				//request = _twitter.oauth_requestToken();
+				//complete = _tokenCompleteHandler;
+			//}
+
+			_setHandlersForRequest(request, complete);
+			}
+			else {
+				trace("twitter feature is on but oath has not been done");
+				AlertManager.createAlert(this, "The Twitter feature is turned on but you have not linked your Twitter account yet. Exit this program and run the Magic Mirror Configuration program to link your Twitter account and then re-run the Magic Mirror.");
+				
+			}
+		}
+		
+		
 		private function say_tweet1(value:String):void
 		
-		{								
-				tts_stream_tweet1 = new Sound(); 
-				var loader_tweet1:URLLoader = new URLLoader();
-				configureListeners(loader_tweet1);	
-				var request_tweet1:URLRequest = new URLRequest();
+		{					
+				if (tts_stream_tweet1 !=null) {
+					sound_playing = 1;
+					tts_stream_tweet1 = new Sound(); 
+					var loader_tweet1:URLLoader = new URLLoader();
+					configureListeners(loader_tweet1);	
+					var request_tweet1:URLRequest = new URLRequest();
 				
 					var header_tweet1:URLRequestHeader = new URLRequestHeader(tts_headername,tts_headervalue);			
 					request_tweet1 = new URLRequest(generateAudioURL(value));
@@ -4442,130 +4553,404 @@ package {
 					request_tweet1.requestHeaders.push(header_tweet1);
 				
 					 
-				try {
-					loader_tweet1.load(request_tweet1);
-				} catch (error:Error) {
-					trace("Unable to load TTS");
-				}				
-						
-				tts_stream_tweet1.load(request_tweet1);
-				tts_channel_tweet1 = tts_stream_tweet1.play();							
-				tts_channel_tweet1.addEventListener(Event.SOUND_COMPLETE,TTSSoundDoneTweet1);			
+					try {
+						loader_tweet1.load(request_tweet1);
+					} catch (error:Error) { //add try catch here
+						trace("Unable to load TTS");
+						//ResetVideoFlags();
+						//return;
+					}
+							
+					tts_stream_tweet1.load(request_tweet1);
+					tts_channel_tweet1 = tts_stream_tweet1.play();							
+					tts_channel_tweet1.addEventListener(Event.SOUND_COMPLETE,TTSSoundDoneTweet1);	
+					tts_channel_tweet1.addEventListener (IOErrorEvent.IO_ERROR, TTSPlayError);
+					
+					if (myXML.lipsync_feature == "on") {
+						LipsyncTimer.addEventListener(TimerEvent.TIMER,  processSound);
+						LipsyncTimer.start();
+					}
+					}
 				
-				if (myXML.lipsync_feature == "on") {
-					LipsyncTimer.addEventListener(TimerEvent.TIMER,  processSound);
-					LipsyncTimer.start();
+				else {
+					trace("tts stream tweet1 was null");
+					switch_mode();
+					ResetVideoFlags();
 				}
-			
 		}
 		
 		
 	private function say_tweet2(value:String):void
 		
-		{								
-				tts_stream_tweet2 = new Sound(); 
-				var loader_tweet2:URLLoader = new URLLoader();
-				configureListeners(loader_tweet2);	
-				var request_tweet2:URLRequest = new URLRequest();
-				
-					var header_tweet2:URLRequestHeader = new URLRequestHeader(tts_headername,tts_headervalue);			
-					request_tweet2 = new URLRequest(generateAudioURL(value));
-					request_tweet2.method = URLRequestMethod.GET;
-					request_tweet2.requestHeaders.push(header_tweet2);
-				
-					 
-				try {
-					loader_tweet2.load(request_tweet2);
-				} catch (error:Error) {
-					trace("Unable to load TTS");
-				}				
+		{				
+				if (tts_stream_tweet2 !=null) {
+					tts_stream_tweet2 = new Sound(); //add the try catch
+						var loader_tweet2:URLLoader = new URLLoader();
+						configureListeners(loader_tweet2);	
+						var request_tweet2:URLRequest = new URLRequest();
 						
-				tts_stream_tweet2.load(request_tweet2);
-				tts_channel_tweet2 = tts_stream_tweet2.play();							
-				tts_channel_tweet2.addEventListener(Event.SOUND_COMPLETE,TTSSoundDoneTweet2);			
-				
-				if (myXML.lipsync_feature == "on") {
-					LipsyncTimer.addEventListener(TimerEvent.TIMER,  processSound);
-					LipsyncTimer.start();
+							var header_tweet2:URLRequestHeader = new URLRequestHeader(tts_headername,tts_headervalue);			
+							request_tweet2 = new URLRequest(generateAudioURL(value));
+							request_tweet2.method = URLRequestMethod.GET;
+							request_tweet2.requestHeaders.push(header_tweet2);
+						
+							 
+						try {
+							loader_tweet2.load(request_tweet2);
+						} catch (error:Error) {
+							trace("Unable to load TTS");
+							//ResetVideoFlags();
+							//return;
+						}				
+								
+						tts_stream_tweet2.load(request_tweet2);
+						tts_channel_tweet2 = tts_stream_tweet2.play();							
+						tts_channel_tweet2.addEventListener(Event.SOUND_COMPLETE,TTSSoundDoneTweet2);
+						tts_channel_tweet2.addEventListener (IOErrorEvent.IO_ERROR, TTSPlayError);
+						
+						if (myXML.lipsync_feature == "on") {
+							LipsyncTimer.addEventListener(TimerEvent.TIMER,  processSound);
+							LipsyncTimer.start();
+						}
 				}
+				
+				else {
+						trace("tts stream tweet2 was null");
+						switch_mode();
+						ResetVideoFlags();
+				}
+				
 			
 		}
 		
-	 private function GetLatestTweet(e:TimerEvent):void {
+	private function _setHandlersForRequest(request:TwitterRequest, completeHandler:Function):void
+		{
+			request.addEventListener(TwitterRequestEvent.COMPLETE, completeHandler);
+			request.addEventListener(IOErrorEvent.IO_ERROR, _errorHandler);
+			request.addEventListener(SecurityErrorEvent.SECURITY_ERROR, _errorHandler);
+			request.addEventListener(TwitterErrorEvent.CLIENT_ERROR, _errorHandler);
+			request.addEventListener(TwitterErrorEvent.SERVER_ERROR, _errorHandler);
+		}
+
+		private function _verifyCompleteHandler(event:TwitterRequestEvent):void
+		{
+			dispatchEvent(new Event(Event.COMPLETE));
+			trace("we've succesulled auth!");
+			//tweet("hello there 2");
+			
+			///tweetr.addEventListener(TweetEvent.COMPLETE, handleTweetsLoaded);
+				//tweetr.addEventListener(TweetEvent.FAILED, handleTweetsFail);
+			tweet_button.addEventListener(MouseEvent.CLICK, Speak_Tweet_Event_MouseClick);
+				
+							
+				
+			TwitterTimer = new Timer(twitter_frequency * 1000); //its entered in seconds in the admin screen so convert to ms
+			//TwitterTimer.addEventListener(TimerEvent.TIMER, GetLatestTweet);			
+			TwitterTimer.addEventListener(TimerEvent.TIMER, _getTweets);		
+			TwitterTimer.start();
+
+			// check every ten minutes
+			//_mentionChecker = new Timer(10000, 0);
+			//_mentionChecker.addEventListener(TimerEvent.TIMER, _checkMentionsHandler);
+			//_mentionChecker.start();
+
+			//_getTweets();
+			//_searchTerm();
+			
+		}
+		
+		private function _getTweets(e:TimerEvent):void
+		{
+			
+			//var request:TwitterRequest = _twitter.statuses_mentionsTimeline(20, _mentionedSinceID);
+			//var request:TwitterRequest = _twitter.statuses_homeTimeline(5, _mentionedSinceID);
+			//var request:TwitterRequest = _twitter.statuses_userTimeline(_mentionedSinceID);
+			//var request:TwitterRequest = _twitter.search_tweets("speakmirror");
+			
+			
+		  trace("went to the initial get tweets");
+		  
+		  var request:TwitterRequest;
+			
+		  if (twitter_mode == "user") {  //get tweets from anyone you follow
+			  if (twitter_my_tweets_only == "on") {   //or it means just get your personal tweets
+					//tweetr.getUserTimeLine(); //this gets just the tweets from the user	
+					request = _twitter.statuses_userTimeline();
+			  }
+			  else {
+				    request = _twitter.statuses_homeTimeline(1);
+			  }
+		  }
+		  
+		  if (twitter_mode == "mentions") {				  
+					//tweetr.getHomeTimeLine(); //this gets all tweets from the user's login 
+					request = _twitter.statuses_mentionsTimeline(1);
+		  }
+		  
+		  if (twitter_mode == "search") {
+					request = _twitter.search_tweets(twitter_search_term,null,tts_language);
+		  }
+		  
+			//now that we know which type of tweets to get, let's now get those tweets
+			_setHandlersForRequest(request, _TweetsLoadedCompleteHandler);
+			
+		}
+		
+				
+		private  function _TweetsLoadedCompleteHandler(event:TwitterRequestEvent):void
+		{
+			
+
+			
+			_mentions = new Vector.<MentionModel>;
+
+			var request:TwitterRequest = event.currentTarget as TwitterRequest;
+			
+			//var mentions:Array = JSON.parse(request.response as String) as Array;
+			var mentions:Array;
+			
+			if (twitter_mode == "user" || twitter_mode == "mentions") {
+			
+				mentions = JSON.parse(request.response as String) as Array;  //TO DO . look into this, it was JSON.decode
+			}
+			else {  //then we're in search twitter mode
+				mentions=JSON.parse(request.response as String)["statuses"] as Array; //slightly different format we need for search tweets  //TO DO . look into this, it was JSON.decode
+			}
+			
+			var mention:MentionModel;
+			//var e:TwitterControllerEvent;
+
+			for (var i:int = 0; i < mentions.length; i++) 
+			{
+				mention = new MentionModel(mentions[i]);
+				_mentions.push(mention);
+
+				//trace("I got mention from: " + mention.screenName);
+				//trace("with the content: " + mention.text);
+				
+				if (i == 0) {
+					full_tweet = mention.text;
+					tweet_username = mention.screenName; 
+				}
+
+				//e = new TwitterControllerEvent(TwitterControllerEvent.GOT_MENTION);
+				//e.data = mention;
+
+				//dispatchEvent(e);
+			}
+			
+			trace (full_tweet);
+			if (_mentions.length < 1)
+			{
+				//trace("no mentions");
+				//_mentionedSinceID = MentionModel(_mentions[0]).id;
+				//_saveSettings();
+			}
+				
+			if (twitter_mode == "user") {
+				 if (twitter_my_tweets_only == "on") {
+						//full_tweet =  tweet.text;  //since just the user's tweets, no need to announce who the tweet is from
+						full_tweet = full_tweet;
+				 }
+				 else {
+						//full_tweet =  tweet.user.screenName + " tweeted " + tweet.text; //also announce who the tweet is from	
+						full_tweet =  tweet_username + " tweeted " + full_tweet; //also announce who the tweet is from	
+				 }
+			}
+			
+			if (twitter_mode == "mentions") {	
+				full_tweet = full_tweet;
+			}
+			
+			//else {
+		   if (twitter_mode == "search") {
+				if (twitter_do_not_speak_search_term == "on") {
+					
+					//full_tweet = tweet_search.text.replace(twitter_search_term,""); //replace the search term with blank	
+					//placeholdedr until search fixed
+					full_tweet = full_tweet.replace(twitter_search_term,""); //replace the search term with blank	
+					
+				}
+				else {  //speak the full tweet with the search term
+					//full_tweet = tweet_search.text;
+					//placeholder until search fixed
+					full_tweet = full_tweet;
+				}
+			}
+						
+			var index:int = full_tweet.indexOf("http://");
+			trace ("total tweet words " + index);
+			
+			if (index != -1) {  //the tweet contained the http:// text, otherwise just leave along and use the full text					
+				full_tweet = full_tweet.substr(0,index); //cut out the http:// part of the tweet
+			}
+			
+			tweet_text.text = full_tweet;  //tweet_text is the screen label text field
+			
+			if (twitter_mode == "user") {								
+				//current_tweet = tweet.text;
+				//tweet_username = tweet.user.screenName;
+				current_tweet = full_tweet;
+				tweet_username = mention.screenName;
+				
+			}
+			else {
+				//current_tweet = tweet_search.text;
+				//placeholder until search fixed
+				current_tweet = full_tweet;
+			}
+			
+			//now let's check if the tweet if over 100 chars, if not, then we don't need to do anything
+			//if that is the case, call the normal say routine
+			//if not the case, then need to call the special twitter say routines to handle over 100 chars
+			
+			//so check how many chars here  
+			
+			trace ("total characters is " + full_tweet.length);
+			
+			if (full_tweet.length > 100) {
+				tweet_over_100 = 1;
+				tweet_array = full_tweet.split(" ");
+				trace (tweet_array.length);
+				var tweet1_num_words:int = tweet_array.length/2;
+				trace ("tweet1 num words: " + tweet1_num_words);
+				var tweet2_num_words:int = (tweet_array.length - tweet1_num_words);
+				trace ("tweet2 num words: " + tweet2_num_words);
+				
+				var tweet1_array:Array = new Array();
+				var tweet2_array:Array = new Array();
+				
+				for (var i:int = 0; i < tweet1_num_words; i++) {
+					tweet1_array.push(tweet_array[i]); //push just the first half into this new array
+				}
+				
+				for (var x:int = tweet1_num_words; x < tweet_array.length; x++) {
+					tweet2_array.push(tweet_array[x]); //push the second half into this new array
+				}
+				
+				tweet1_text = tweet1_array.join(" ");
+				tweet1_text = tweet1_text.substr(0,100); //make sure it's not over 100 chars
+				trace ("first tweet text is: " + tweet1_text);
+				
+				tweet2_text = tweet2_array.join(" ");
+				tweet2_text = tweet2_text.substr(0,100); //make sure it's not over 100 chars
+				trace ("second tweet text is: " + tweet2_text);
+				
+			}
+			else {
+				tweet_over_100 = 0;
+			}
+			
+			if (full_tweet.length != 0) {  //this would happen if http:// is the first part of the tweet
+				Speak_Tweet_Event(); //now let's play it if nothing else is playing
+			}
+			
+		}
+		
+		public function tweet(message:String):void
+		{
+			trace("Tweet: " + message);
+
+			var request:TwitterRequest = _twitter.statuses_update(message);
+			_setHandlersForRequest(request, _tweetCompleteHandler);
+		}
+		
+
+		private function _tweetCompleteHandler(event:TwitterRequestEvent):void
+		{
+			trace("tweet send")
+		}
+
+		private function _errorHandler(event:Event):void //twitter event error handled
+		{
+			trace(event.type);
+			trace("we had a twitter IO event error");
+
+			if (event is TwitterErrorEvent)
+			{
+				trace(TwitterErrorEvent(event).statusCode.toString());
+			}
+			
+			ResetVideoFlags();
+			
+		}
+
+
+		
+	// private function GetLatestTweet(e:TimerEvent):void {
 				       //twitter_mode is user or search
 	  
-		  if (twitter_mode == "user") {
+		//  if (twitter_mode == "user") {
 		  
-				  if (twitter_my_tweets_only == "on") {
-						tweetr.getUserTimeLine(); //this gets just the tweets from the user						  
-				  }
-				  else {					  
-						tweetr.getHomeTimeLine(); //this gets all tweets from the user's login 
-				  }
+				//  if (twitter_my_tweets_only == "on") {
+					//	tweetr.getUserTimeLine(); //this gets just the tweets from the user						  
+				  //}
+				  //else {					  
+					//	tweetr.getHomeTimeLine(); //this gets all tweets from the user's login 
+				  //}
 				  
-				 // tweetr.updateStatus("This test means sending tweets work");
+				 // tweet("This test means sending tweets work");
 				  
-		  }
+		  //}
 		  
-		  else {
+		 // else {
 			  	
-				tweetr.search(twitter_search_term,tts_language);  
+				//tweetr.search(twitter_search_term,tts_language);  
 				  //public function search(searchString:String, lang:String = null, numTweets:Number = 15, page:Number = 1, since_id:Number = 0, geocode:String = null):void
-		  }
+		  //}
 		  		  
-	  }
-			 
+	  //} 
        
-     private function handleTweetsLoaded(event:TweetEvent):void
-            {
+   //  private function handleTweetsLoaded(event:TweetEvent):void
+     //       {
                
-                if (twitter_mode == "user") {				
-					var tweet:StatusData = event.responseArray[0] as StatusData;
-				}
-				else {  //then we're in search mode so use this instead
-					var tweet_search:SearchResultData = event.responseArray[0] as SearchResultData;
-				}
+       //         if (twitter_mode == "user") {				
+					//var tweet:StatusData = event.responseArray[0] as StatusData;
+				//}
+				//else {  //then we're in search mode so use this instead
+				//	var tweet_search:SearchResultData = event.responseArray[0] as SearchResultData;
+				//}
                 
                 // load the users avatar image
                //avatar.load(tweet.user.profileImageUrl);				
 				//tweet_text.text = "@"+tweet.user.screenName + tweet.text + " " + TweetUtil.returnTweetAge(tweet.createdAt);
 				 
 				
-				if (twitter_mode == "user") {
-					 if (twitter_my_tweets_only == "on") {
-							full_tweet =  tweet.text;  //since just the user's tweets, no need to announce who the tweet is from
-					 }
-					 else {
-							full_tweet =  tweet.user.screenName + " tweeted " + tweet.text; //also announce who the tweet is from						 
-					 }
-				}
-				else {
-					if (twitter_do_not_speak_search_term == "on") {
+				//if (twitter_mode == "user") {
+					// if (twitter_my_tweets_only == "on") {
+							//full_tweet =  tweet.text;  //since just the user's tweets, no need to announce who the tweet is from
+					// }
+					 //else {
+							//full_tweet =  tweet.user.screenName + " tweeted " + tweet.text; //also announce who the tweet is from						 
+					 //}
+		//		}
+			//	else {
+				//	if (twitter_do_not_speak_search_term == "on") {
 						//full_tweet = tweet_search.text;
 						//full_tweet = full_tweet.replace(twitter_search_term,""); //replace the search term with blank	
-						full_tweet = tweet_search.text.replace(twitter_search_term,""); //replace the search term with blank	
-					}
-					else {  //speak the full tweet with the search term
-						full_tweet = tweet_search.text;
-					}
-				}
+			//			full_tweet = tweet_search.text.replace(twitter_search_term,""); //replace the search term with blank	
+				//	}
+				//	else {  //speak the full tweet with the search term
+					//	full_tweet = tweet_search.text;
+				//	}
+			//	}
 						
-				var index:int = full_tweet.indexOf("http://");
-				trace ("total tweet words " + index);
+		//		var index:int = full_tweet.indexOf("http://");
+			//	trace ("total tweet words " + index);
 				
-				if (index != -1) {  //the tweet contained the http:// text, otherwise just leave along and use the full text					
-					full_tweet = full_tweet.substr(0,index); //cut out the http:// part of the tweet
-				}
+		//		if (index != -1) {  //the tweet contained the http:// text, otherwise just leave along and use the full text					
+				//	full_tweet = full_tweet.substr(0,index); //cut out the http:// part of the tweet
+		//		}
 				
-				tweet_text.text = full_tweet;				
+		//		tweet_text.text = full_tweet;				
 				
-				if (twitter_mode == "user") {								
-					current_tweet = tweet.text;
-					tweet_username = tweet.user.screenName;
-				}
-				else {
-					current_tweet = tweet_search.text;
-				}
+			//	if (twitter_mode == "user") {								
+			//		current_tweet = tweet.text;
+			//		tweet_username = tweet.user.screenName;
+			//	}
+			//	else {
+				//	current_tweet = tweet_search.text;
+			//	}
 				
 				//now let's check if the tweet if over 100 chars, if not, then we don't need to do anything
 				//if that is the case, call the normal say routine
@@ -4573,46 +4958,46 @@ package {
 				
 				//so check how many chars here  
 				
-				trace ("total characters is " + full_tweet.length);
+		//		trace ("total characters is " + full_tweet.length);
 				
-				if (full_tweet.length > 100) {
-					tweet_over_100 = 1;
-					tweet_array = full_tweet.split(" ");
-					trace (tweet_array.length);
-					var tweet1_num_words:int = tweet_array.length/2;
-					trace ("tweet1 num words: " + tweet1_num_words);
-					var tweet2_num_words:int = (tweet_array.length - tweet1_num_words);
-					trace ("tweet2 num words: " + tweet2_num_words);
+		//		if (full_tweet.length > 100) {
+				//	tweet_over_100 = 1;
+			//		tweet_array = full_tweet.split(" ");
+			//		trace (tweet_array.length);
+				//	var tweet1_num_words:int = tweet_array.length/2;
+		//			trace ("tweet1 num words: " + tweet1_num_words);
+				//	var tweet2_num_words:int = (tweet_array.length - tweet1_num_words);
+			//		trace ("tweet2 num words: " + tweet2_num_words);
 					
-					var tweet1_array:Array = new Array();
-					var tweet2_array:Array = new Array();
+			//		var tweet1_array:Array = new Array();
+			//		var tweet2_array:Array = new Array();
 					
-					for (var i:int = 0; i < tweet1_num_words; i++) {
-						tweet1_array.push(tweet_array[i]); //push just the first half into this new array
-					}
+			//		for (var i:int = 0; i < tweet1_num_words; i++) {
+				//		tweet1_array.push(tweet_array[i]); //push just the first half into this new array
+			//		}
 					
-					for (var x:int = tweet1_num_words; x < tweet_array.length; x++) {
-						tweet2_array.push(tweet_array[x]); //push the second half into this new array
-					}
+			//		for (var x:int = tweet1_num_words; x < tweet_array.length; x++) {
+				//		tweet2_array.push(tweet_array[x]); //push the second half into this new array
+		//			}
 					
-					tweet1_text = tweet1_array.join(" ");
-					tweet1_text = tweet1_text.substr(0,100); //make sure it's not over 100 chars
-					trace ("first tweet text is: " + tweet1_text);
+			//		tweet1_text = tweet1_array.join(" ");
+				//	tweet1_text = tweet1_text.substr(0,100); //make sure it's not over 100 chars
+			//		trace ("first tweet text is: " + tweet1_text);
 					
-					tweet2_text = tweet2_array.join(" ");
-					tweet2_text = tweet2_text.substr(0,100); //make sure it's not over 100 chars
-					trace ("second tweet text is: " + tweet2_text);
+				//	tweet2_text = tweet2_array.join(" ");
+				//	tweet2_text = tweet2_text.substr(0,100); //make sure it's not over 100 chars
+				//	trace ("second tweet text is: " + tweet2_text);
 					
-				}
-				else {
-					tweet_over_100 = 0;
-				}
+			//	}
+			//	else {
+				//	tweet_over_100 = 0;
+			//	}
 				
-				if (full_tweet.length != 0) {  //this would happen if http:// is the first part of the tweet
-					Speak_Tweet_Event(); //now let's play it if nothing else is playing
-				}
+		//		if (full_tweet.length != 0) {  //this would happen if http:// is the first part of the tweet
+				//	Speak_Tweet_Event(); //now let's play it if nothing else is playing
+			//	}
 				
-            }
+           // }
 			
               
         
@@ -4624,7 +5009,15 @@ package {
 							_detectionTimer.stop();
 						}
 						
-						myVid.play(weather_good_cliptts);
+						//myVid.play(weather_good_cliptts);
+						
+						if (lipsync_feature == "on") {
+							myVid.play(lipsync_clip);
+						}
+						else {
+							myVid.play(weather_good_cliptts);
+						}
+						
 						if (tweet_over_100 == 1) {					
 							say_tweet1(tweet1_text);
 						}
@@ -4644,11 +5037,42 @@ package {
 						}
 						
 						
-						myVid.play(weather_good_cliptts);
-						if (tweet_over_100 == 1) {					
-							say_tweet1(tweet1_text);
+						//myVid.play(weather_good_cliptts); //this was a bug, there was no tts piece to kick in if twitter and tts on
+						
+												
+						if (lipsync_feature == "on") {
+							myVid.play(lipsync_clip);
 						}
-						else say(full_tweet);
+						else {
+							myVid.play(weather_good_cliptts);
+						}
+						
+						if (tweet_over_100 == 1) {	//then we need to do tts due to the google api limitation of only 100 chars at a time				
+							//say_tweet1(tweet1_text); //add try catch
+							
+							try {
+								say_tweet1(tweet1_text); //add try catch
+							} catch (error:Error) {
+								trace("Unable speak tweet");
+								ResetVideoFlags();
+								return;
+							}	
+							
+						}
+						//else say(full_tweet);  //then the tweet is less than 100 chars, add try catch
+						else
+						try {
+								say(full_tweet);
+							} catch (error:Error) {
+								trace("Unable speak tweet");
+								ResetVideoFlags();
+								return;
+							}	
+						
+						
+					}
+					else {
+						trace("no new tweets so not playing anything");
 					}
 					
 					last_tweet = current_tweet;
@@ -4666,7 +5090,8 @@ package {
 		
 		{			
 			//var generatedString:String = 'http://translate.google.com/translate_tts?q=' + value + '&tl=en';			
-			var generatedString_breath:String = 'http://translate.google.com/translate_tts?q=' + value + '&tl=' + tts_language;				
+			//var generatedString_breath:String = 'http://translate.google.com/translate_tts?q=' + value + '&tl=' + tts_language;			
+			var generatedString_breath:String = tts_url + value + '&tl=' + tts_language;		
 			return generatedString_breath;
 		}	
 		
@@ -4704,10 +5129,12 @@ package {
 
        private function ioErrorHandler(event:IOErrorEvent):void {
             trace("TTSioErrorHandler: " + event);
-			mirror_did_not_init_text.text = "I could not access the Web based Text to Speech API, please check your Internet connection";
-			mirror_did_not_init_text.visible = true;
-			TextClearTimer.start();  //this timer will clear the text
+			//sometimes tts gives a hiccup but continues to work so let's not show this
+			//mirror_did_not_init_text.text = "I could not access the Web based Text to Speech API, please check your Internet connection";
+			//mirror_did_not_init_text.visible = true;
+			//TextClearTimer.start();  //this timer will clear the text
 			//also since we bombed out, reset everything
+			trace("went to the tts mode io Error handler");
 			switch_mode();
 			ResetVideoFlags();
         }
@@ -5402,6 +5829,7 @@ package {
 			//mirror_did_not_init_text.text = String("Warning: Either you blew into the Breathalyzer too soon (before pushing the button) or didn't wait long enough for the Breathalyzer to reset");
 		//}
 		
+		
 		if (Alcohol_Reading < (alcohol_baseline + alcohol_level1)) {  //alcohol_baseline we obtained when the user pressed switch5
 			 
 			if (mode_select == "tts_mode") {							
@@ -5426,10 +5854,12 @@ package {
 			if (twitter_feature == "on" && twitter_authenticated == "yes" && twitter_breathalyzer == "on") {
 				
 				if (twitter_breathalyzer_value == "on") {
-					tweetr.updateStatus(myXML.twitter_drink1 + " :" + Alcohol_Reading);
+					//tweetr.updateStatus(myXML.twitter_drink1 + " :" + Alcohol_Reading);
+					tweet(myXML.twitter_drink1 + " :" + Alcohol_Reading);
 				}
 				else {
-					tweetr.updateStatus(myXML.twitter_drink1);
+					//tweetr.updateStatus(myXML.twitter_drink1);
+					tweet(myXML.twitter_drink1)
 				}
 				
 			}
@@ -5468,10 +5898,10 @@ package {
 			if (twitter_feature == "on" && twitter_authenticated == "yes" && twitter_breathalyzer == "on") {
 				
 				if (twitter_breathalyzer_value == "on") {
-					tweetr.updateStatus(myXML.twitter_drink2 + " :" + Alcohol_Reading);
+					tweet(myXML.twitter_drink2 + " :" + Alcohol_Reading);
 				}
 				else {
-					tweetr.updateStatus(myXML.twitter_drink2);
+					tweet(myXML.twitter_drink2);
 				}
 			}
 		}
@@ -5504,10 +5934,10 @@ package {
 			if (twitter_feature == "on" && twitter_authenticated == "yes" && twitter_breathalyzer == "on") {
 				
 				if (twitter_breathalyzer_value == "on") {
-					tweetr.updateStatus(myXML.twitter_drink3 + " :" + Alcohol_Reading);
+					tweet(myXML.twitter_drink3 + " :" + Alcohol_Reading);
 				}
 				else {
-					tweetr.updateStatus(myXML.twitter_drink3);
+					tweet(myXML.twitter_drink3);
 				}
 			}
 		}
@@ -5541,10 +5971,10 @@ package {
 			if (twitter_feature == "on" && twitter_authenticated == "yes" && twitter_breathalyzer == "on") {
 				
 				if (twitter_breathalyzer_value == "on") {
-					tweetr.updateStatus(myXML.twitter_drink4 + " :" + Alcohol_Reading);
+					tweet(myXML.twitter_drink4 + " :" + Alcohol_Reading);
 				}
 				else {
-					tweetr.updateStatus(myXML.twitter_drink4);
+					tweet(myXML.twitter_drink4);
 				}
 			}
 		}
@@ -5581,6 +6011,15 @@ package {
 			WarningMessage.text = "Note the Magic Mirror is in stand alone mode and will not find the Sensor Hub. You may turn off Stand Alone Mode from the Advanced Configuration Program";			
 			
 			WarningMessageClearTimer.start(); //clears the warning text
+			
+			if (stand_alone_weather != "on") {
+				weather_image_sprite.visible = false;
+			}
+						
+			if (stand_alone_stock != "on") {
+				stock_image_sprite.visible = false;
+			}
+			
 	}
 	
 	
@@ -6135,8 +6574,8 @@ package {
 	
 		///// ***************************************************
 		
-		private function onClipDone(e:VideoEvent):void {   //loop to idle clip when nothing going on
-			
+		//private function onClipDone(e:VideoEvent):void {   //loop to idle clip when nothing going on
+		private function onClipDone(e:fl.video.VideoEvent):void {
 			if (mode_select == "tts_mode" && sound_playing == 1) {  		//usually we would never get here because the audio will finish before the video and the audio will kill the clip
 																			//if we're in TTS mode and the video file has finished playing before the audio has, then loop the video
 					//if the sound is still playing, then don't go to resetVideo flags yet but loop instead
@@ -6297,6 +6736,12 @@ package {
 			
 			ResetVideoFlags();  //this will reset some stuff and then call myVid.idle
 			
+		}
+		
+		private function TTSPlayError(event:Event):void { //had a problem speaking the tweet
+			trace("went to speak tweet error handler");
+			switch_mode();
+			ResetVideoFlags();
 		}
 		
 		private function ResetVideoFlags():void {
@@ -6484,6 +6929,7 @@ package {
 			sound_playing = 0;
 			stockweatherplaying = 0; //reset back to the breathalyzer LED if this is turned on 
 			
+			
 		}
 		
 		private function NavigationCuePoints(eventObject:MetadataEvent):void {   //loop to idle clip when nothing going on
@@ -6510,8 +6956,8 @@ package {
 			
 	     } //end function
 		
-		private function onSeekedEvent(e:VideoEvent):void {   //when done seeking back to beginning, play the idle video
-		 	
+		//private function onSeekedEvent(e:VideoEvent):void {   //when done seeking back to beginning, play the idle video
+		private function onSeekedEvent(e:fl.video.VideoEvent):void { 	
 				trace("reached seek event");
 				idle.text=("Reached Seek Event");
 				
@@ -7292,7 +7738,6 @@ package {
 							}
 							
 							
-							
 							if (myXML.video_interrupts == "on") {
 								if ((SlideShowRunning == 0)  && (doorcamPlayingFlag == 0) && (photoboothRunning == 0) && (photoboothIdle == 0)) {  //don't play error sound if slideshow or photobooth
 										if ((initial_values_done == 1) && (doorcamPlayingFlag == 0) && (idle_start_playing == 1) && (initial_values_done == 1) && (idle_start_playing == 1)) {
@@ -7315,6 +7760,8 @@ package {
 								}
 								
 							}
+							
+							
 							
 								
 							if (switch4 == "on") {  // ******** IMPORTANT end if for switch 5, 1, 2, and 3, do not put this after switch4 or picasa slideshow won't work					
@@ -7585,8 +8032,6 @@ package {
 								}
 							}
 						
-						
-						
 						if (switch3 == "on") { //stock
 						//if ((switch3 == "on") && (video_playing == 0) && (sound_playing == 0)) { //stock
 						
@@ -7628,6 +8073,8 @@ package {
 								//initial_switch3_value =  a.getDigitalData(switch3_pin);	
 							}
 						}
+						
+						
 		
 	}
 	
@@ -8346,7 +8793,7 @@ package {
 	   
 	private function initPhotoboothSounds(): void {
 		
-		//the character must have been initialized before going here				
+		//the character must have been initialized before going here		
 			photobooth_IntroSound = new Sound(new URLRequest(photobooth_IntroSoundPath));
 			photobooth_getReadySound = new Sound(new URLRequest(photobooth_getReadySoundPath));
 			photobooth_pic2Sound = new Sound(new URLRequest(photobooth_pic2SoundPath));	
