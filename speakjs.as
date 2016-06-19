@@ -29,6 +29,7 @@
             //variables.exampleSessionId = new Date().getTime();
             //variables.exampleUserLabel = "Your Name";
 			variables.tts = "the quick brown";
+			variables.voice = "2";
             var request:URLRequest = new URLRequest(url);
             request.data = variables;
             try {            
@@ -37,22 +38,6 @@
             catch (e:Error) {
                 // handle error here
             }
-			//navugateToURL(new URLRequest("http://diymagicmirror.com/speak2.html"));
-			
-			
-			
-			var html:HTMLLoader = new HTMLLoader();
-			html.addEventListener(Event.COMPLETE, splash);
-			//html.load(new URLRequest("http://diymagicmirror.com/speak2.html"));
-
-			 function splash(e:Event):void
-			{
-				// try to access the element by its ID and call the Javascript click() function on it
-				html.window.document.getElementById('Play').click(); // this gives error "click is not a function"
-
-				// try to call the Javascript function directly by its name
-				//html.window.submitAssistantForm('next'); // this gives error "TypeError: Result of expression 'document.theForm' [undefined] is not an object."
-			}
         }
                                 
       
