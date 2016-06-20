@@ -5207,7 +5207,7 @@
 			weather_woeid = "202488836";
 		}
 		
-		//https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%3D%202488836&diagnostics=true
+		//https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%3D%202488836&diagnostics=true  this is the original rest call
 		
 		if (weather_woeid != "") {  //a woeid was entered so use that
 			

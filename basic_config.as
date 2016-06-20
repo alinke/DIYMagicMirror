@@ -3436,7 +3436,7 @@
   <display_mode_preset>0</display_mode_preset>
   <idle_videos>on</idle_videos>
   <video_resolution>high</video_resolution>
-  <version>7.3</version>
+  <version>7.5</version>
   <digital_switches>on</digital_switches>
   <switch1>off</switch1>
   <switch2>off</switch2>
@@ -3536,7 +3536,7 @@
   <find_arduino_delay>0</find_arduino_delay>
   <reg_code/>
   <weather_zip>97411</weather_zip>
-  <weather_woeid/>
+  <weather_woeid>2488836</weather_woeid>
   <weather_reading>f</weather_reading>
   <weather_display>no</weather_display>
   <forecast_cutoff>11</forecast_cutoff>
@@ -4019,7 +4019,7 @@
 	
 	private function CheckConfigVersion():void {
 		//let's check and make sure the user doesn't have an old version of the config file
-			if (Number(myXML.version) < 7.3) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
+			if (Number(myXML.version) < 7.5) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
 				//AlertManager.createAlert(this, "Your configuration file was an older version and has been updated, your current settings have been maintained");
 				//before blowing the file away, let's read it into another XML so we have a record of the old settings
 				filestream.open(file, FileMode.READ);
