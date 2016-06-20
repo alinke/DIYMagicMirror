@@ -622,7 +622,8 @@
 		only_my_tweets_checkbox.height = 22;
 		only_my_tweets_checkbox.label = "Just My Tweets";
 		addChild(only_my_tweets_checkbox);
-		only_my_tweets_checkbox.visible = true;
+		//only_my_tweets_checkbox.visible = true;  
+		only_my_tweets_checkbox.visible = false;   
 		
 		do_not_speak_twitter_search_term_checkbox.x = 647.40;
 		do_not_speak_twitter_search_term_checkbox.y = 201.91;
@@ -630,7 +631,9 @@
 		do_not_speak_twitter_search_term_checkbox.height = 22;
 		do_not_speak_twitter_search_term_checkbox.label = "Don't Speak Search Term";
 		addChild(do_not_speak_twitter_search_term_checkbox);
-		do_not_speak_twitter_search_term_checkbox.visible = true;
+		//do_not_speak_twitter_search_term_checkbox.visible = true;
+		do_not_speak_twitter_search_term_checkbox.visible = false;
+		
 		
 		
 		
@@ -640,13 +643,15 @@
 		tweetBreathalyzer_checkbox.height = 22;
 		tweetBreathalyzer_checkbox.label = "Tweet My Breathalyzer Results";
 		addChild(tweetBreathalyzer_checkbox);
-		tweetBreathalyzer_checkbox.visible = true;
+		//tweetBreathalyzer_checkbox.visible = true;
+		tweetBreathalyzer_checkbox.visible = false;
 		
 		StandAloneCheck.x = 428.90;
 		StandAloneCheck.y = 303;
 		StandAloneCheck.width = 590.05;
 		StandAloneCheck.height = 22;
-		StandAloneCheck.label = "Stand Alone Mode (For using Twitter feature without Magic Mirror hardware)";
+		//StandAloneCheck.label = "Stand Alone Mode (For using Twitter feature without Magic Mirror hardware)";
+		StandAloneCheck.label = "Stand Alone Mode (For using without Sensor Hub/Arduino Hardware)";
 		addChild(StandAloneCheck);
 		StandAloneCheck.visible = true;
 		
@@ -666,7 +671,8 @@
 		twitterAuthButton.height = 22;
 		twitterAuthButton.label = "Link Twitter Account";
 		addChild(twitterAuthButton);
-		twitterAuthButton.visible = true;
+		//twitterAuthButton.visible = true;
+		twitterAuthButton.visible = false;
 		
 		twitter_mode_radio_user.group = twitter_mode_rbg;
 		twitter_mode_radio_search.group = twitter_mode_rbg;
@@ -687,6 +693,9 @@
 		addChild (twitter_mode_radio_user);
 		addChild (twitter_mode_radio_search);
 		addChild (twitter_mode_radio_mentions);
+		twitter_mode_radio_user.visible = false;
+		twitter_mode_radio_search.visible = false;
+		twitter_mode_radio_mentions.visible = false;
 		
 		tts_feature_radio_on.group = TTS_rbg; 
 	    tts_feature_radio_off.group = TTS_rbg;
@@ -703,7 +712,12 @@
 		tts_feature_radio_off.label = "OFF";
 		
 		addChild (tts_feature_radio_on);
-		addChild (tts_feature_radio_off);		
+		addChild (tts_feature_radio_off);	
+		
+		tts_feature_radio_on.visible = false;
+		tts_feature_radio_off.visible = false;
+		
+
 		
 		setupComboBox();
 		

@@ -950,7 +950,8 @@
             photoboothCommand.addEventListener(Event.SELECT, photoboothButtonEvent); 
 			var breathalyzerCommand:NativeMenuItem = fileMenu.addItem(new NativeMenuItem("Breathalyzer Calibration and Settings")); 
             breathalyzerCommand.addEventListener(Event.SELECT, BreathalyzerButtonEvent); 
-			var customaudioCommand:NativeMenuItem = fileMenu.addItem(new NativeMenuItem("Custom Audio and Text to Speech Mode")); 
+			//var customaudioCommand:NativeMenuItem = fileMenu.addItem(new NativeMenuItem("Custom Audio and Text to Speech Mode")); 
+			var customaudioCommand:NativeMenuItem = fileMenu.addItem(new NativeMenuItem("Custom Audio Mode")); 
             customaudioCommand.addEventListener(Event.SELECT, TTSButtonEvent); 
 			var doorcamCommand:NativeMenuItem = fileMenu.addItem(new NativeMenuItem("Doorcam (IP Camera Required)")); 
             doorcamCommand.addEventListener(Event.SELECT, PositioningScreenDoorcamButtonEvent); 
@@ -2309,6 +2310,7 @@
 		TTS_Screen_Label.width = 600;
 		TTS_Screen_Label.height = 22;
 		TTS_Screen_Label.text = "Custom Audio (MP3) & Text to Speech Settings";	
+		TTS_Screen_Label.text = "Custom Audio (MP3)";	
 		//TTS_Screen_Label.text = "Text to Speech Settings";			
 		addChild(TTS_Screen_Label);	
 		TTS_Screen_Label.visible = false;
@@ -2903,7 +2905,8 @@
 		tts_instructions.y = 550;
 		tts_instructions.width = 1000;
 		tts_instructions.height = 40;
-		tts_instructions.text = "Add the text for the Magic Mirror to speak for the events above. TTS (Text to Speech) can handle a maximum of 100 characters for each event. The Magic Mirror automatically adds text to the end of the Weather and Stock events. To use TTS, run the Magic Mirror and turn the character select knob until you hear 'Custom Audio Mode'.";			
+		//tts_instructions.text = "Add the text for the Magic Mirror to speak for the events above. TTS (Text to Speech) can handle a maximum of 100 characters for each event. The Magic Mirror automatically adds text to the end of the Weather and Stock events. To use TTS, run the Magic Mirror and turn the character select knob until you hear 'Custom Audio Mode'.";
+		tts_instructions.text = "To use Custom Audio, run the Magic Mirror and turn the character select knob until you hear 'Custom Audio Mode'.";		
 		addChild(tts_instructions);	
 		tts_instructions.visible = false;
 		
@@ -6129,19 +6132,24 @@
 		  setChildIndex(tts_instructions,getChildIndex(black_square));			  
 		  setChildIndex(output,getChildIndex(black_square)); //remove this	  
 		
-		  
+		  custom_audio_path_label.visible = true;
 		  TTS_Screen_Label.visible = true;
+		  tts_feature_radio_off.visible = true;
+		  tts_instructions.visible = true;
+		  
+		  /*                                       // to do add back once TTS is back
 		  proximity1_tts.visible = true;
 		  proximity1_tts_label.visible = true;
 		  proximity2_tts.visible = true;
+		  
 		  proximity2_tts_label.visible = true;
 		  proximity3_tts.visible = true;
 	      proximity3_tts_label.visible = true;
-		//  tts_feature_label.visible = true;
-		//  tts_url_label.visible = true;
-		  tts_language_label.visible = true;
-		  custom_audio_path_label.visible = true;
-		  TTS_languages_dropdown.visible = true;
+		 // tts_language_label.visible = true;
+		  tts_language_label.visible = false;  //TO DO add back once tts is enabled again
+		 
+		 // TTS_languages_dropdown.visible = true;
+		  TTS_languages_dropdown.visible = false;  //TO DO add back once tts is enabled againdd the text for the Magic Mirror to speak for the events above. 
 		  weather_good_tts.visible = true;
 		  weather_good_tts_label.visible = true;
 		  weather_ok_tts_label.visible = true;
@@ -6174,11 +6182,11 @@
 		  blow_tts_label.visible = true;
 		  wait_tts.visible = true;
 		  wait_tts_label.visible = true;
-		  tts_feature_radio_on.visible = true;
+		  //tts_feature_radio_on.visible = true;
+		  tts_feature_radio_on.visible = false;  //TO DO add back when tts is added back
 		  tts_feature_radio_off.visible = true;
-		  //tts_url.visible = true;
 		  tts_instructions.visible = true;
-		  
+		  */
 		  
 		  output.visible = true;
 		 
