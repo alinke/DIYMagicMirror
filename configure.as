@@ -4587,7 +4587,7 @@
 					break;
 				}		
 				
-		if (myXML.tts_feature == "on")  { //this is the default
+		if (myXML.tts_feature == "on")  { //this was the default
 			tts_feature_radio_on.selected = true;			
 		}
 		else {tts_feature_radio_off.selected = true;			
@@ -9180,7 +9180,7 @@ var newconfigXML:XML =
   <photobooth_thanksSoundPathi>sounds/photobooth_thankssound_insult.mp3</photobooth_thanksSoundPathi>
   <photobooth_facialRecognitionTrigger>off</photobooth_facialRecognitionTrigger>
   <photobooth_facialRecognitionDelay>5</photobooth_facialRecognitionDelay>
-  <custom_audio>off</custom_audio>
+  <custom_audio>on</custom_audio>
   <custom_audio_clip>videos/idle_lipsync.flv</custom_audio_clip>
   <custom_audio_lip_pattern>lip_pattern.swf</custom_audio_lip_pattern>
   <lipsync_feature>on</lipsync_feature>
@@ -9232,7 +9232,7 @@ var newconfigXML:XML =
   <twitter_do_not_speak_search_term>off</twitter_do_not_speak_search_term>
   <twitter_breathalyzer>off</twitter_breathalyzer>
   <twitter_breathalyzer_value>on</twitter_breathalyzer_value>
-  <tts_feature>on</tts_feature>
+  <tts_feature>off</tts_feature>
   <tts_avatar>off</tts_avatar>
   <tts_charlimit>100</tts_charlimit>
   <tts_url>http://translate.google.co.uk/translate_tts?q=</tts_url>
@@ -10434,7 +10434,7 @@ var newconfigXML:XML =
 		myXML.stock_bad_threshold = "-1";		
 		
 		myXML.tts_feature = "on";
-		myXML.custom_audio = "off";
+		myXML.custom_audio = "on";
 		myXML.tts_avatar = "off";
 		myXML.tts_charlimit = "100";		
 		myXML.tts_url = "http://translate.google.co.uk/translate_tts?q=";
