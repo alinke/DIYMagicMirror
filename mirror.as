@@ -35,6 +35,7 @@
     import flash.media.Sound;
     import flash.media.SoundChannel;
     import flash.net.URLRequest;
+	import flash.net.navigateToURL;
 	import flash.text.Font;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
@@ -4700,6 +4701,26 @@
 		private  function _TweetsLoadedCompleteHandler(event:TwitterRequestEvent):void
 		{
 			
+			
+			/*	From the twitter library developer			
+
+			Thank you for using my library.
+
+			Here, mentionsTimeline, homeTimeline, and userTimeline APIs return json data which is array of statuses,
+			like: [{"created_at": ...}, {"created_at": ...}]
+
+			but searchTweets API returns object data which includes array of statuses,
+			like: {"statuses": [{"created_at": ...}, {"created_at": ...}], "search_metadata": ...}
+
+			Then the decoded data type is 'Object', and returns null at 'as Array' casting.
+			If you want to do the same work of mentionsTimeline, you must do as below:
+
+				JSON.decode(request.response as String)["statuses"] as Array
+
+			I hope things are going well for you :)
+
+			Susisu
+			*/
 
 			
 			_mentions = new Vector.<MentionModel>;
@@ -4711,7 +4732,7 @@
 			
 			if (twitter_mode == "user" || twitter_mode == "mentions") {
 			
-				mentions = JSON.parse(request.response as String) as Array;  //TO DO . look into this, it was JSON.decode
+				mentions = JSON.parse(request.response as String) as Array;  //TO DO . look into this, it was JSON.decode 
 			}
 			else {  //then we're in search twitter mode
 				mentions=JSON.parse(request.response as String)["statuses"] as Array; //slightly different format we need for search tweets  //TO DO . look into this, it was JSON.decode
@@ -5182,12 +5203,22 @@
 			_detectionTimer.stop();
 		}	
 		
-		if (weather_woeid != "") {  //a woeid was entered so use that
-			WeatherLoader.load(new URLRequest("http://weather.yahooapis.com/forecastrss?w=" + weather_woeid + "&u=" + weather_reading));
-		}		
-		else {		//just a us zip code, no woeid
-			WeatherLoader.load(new URLRequest("http://weather.yahooapis.com/forecastrss?p=" + weather_zip + "&u=" + weather_reading));					
+		if (weather_woeid == "" || null) {
+			weather_woeid = "202488836";
 		}
+		
+		//https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%3D%202488836&diagnostics=true
+		
+		if (weather_woeid != "") {  //a woeid was entered so use that
+			
+			//WeatherLoader.load(new URLRequest("http://weather.yahooapis.com/forecastrss?w=" + weather_woeid + "&u=" + weather_reading));
+			WeatherLoader.load(new URLRequest("http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%3D%20" + weather_woeid + "&diagnostics=true"));
+		}		
+		//else {		//just a us zip code, no woeid
+			//WeatherLoader.load(new URLRequest("http://weather.yahooapis.com/forecastrss?p=" + weather_zip + "&u=" + weather_reading));	
+			//WeatherLoader.load(new URLRequest("http://weather.yahooapis.com/forecastrss?p=" + weather_zip + "&u=" + weather_reading));
+			
+		//}
 	}
 		
 	private function WeatherXMLLoaded(evt:Event):void //triggered when file was loaded
@@ -5663,8 +5694,11 @@
 						say_custom_audio(stock_up_mp3);
 					}
 					else {
+						
 						say(stock_up_tts + " " + String(stockPriceChange));
-					}			
+						
+					}
+					
 					if (lipsync_feature == "on") {
 						myVid.play(lipsync_clip);
 					}
@@ -5693,6 +5727,7 @@
 						say_custom_audio(stock_down_mp3);
 					}
 					else {
+						
 						say(stock_down_tts + " " + String(stockPriceChange));
 					}		
 					
