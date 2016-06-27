@@ -2,6 +2,7 @@
 	import flash.display.MovieClip;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;	
+	import flash.net.URLLoaderDataFormat;
 	import flash.events.NetStatusEvent;
 	import flash.events.HTTPStatusEvent;
 	import flash.net.URLRequest;
@@ -14,9 +15,9 @@
 	import net.eriksjodin.arduino.Arduino;
 	import net.eriksjodin.arduino.events.ArduinoEvent;
 	import flash.display.Sprite;
-	import sk.prasa.webapis.picasa.events.PicasaDataEvent;
+/*	import sk.prasa.webapis.picasa.events.PicasaDataEvent;
 	import sk.prasa.webapis.picasa.PicasaResponder;
-	import sk.prasa.webapis.picasa.PicasaService;
+	import sk.prasa.webapis.picasa.PicasaService;*/
 	import flash.display.Loader;
 	import fl.video.MetadataEvent; 
 	import fl.video.CuePointType;	
@@ -90,14 +91,14 @@
 	import jp.maaash.ObjectDetection.ObjectDetectorEvent;	
 	import jp.maaash.ObjectDetection.ObjectDetectorOptions;	
 	
-	import com.swfjunkie.tweetr.Tweetr;
+	/*import com.swfjunkie.tweetr.Tweetr;
     import com.swfjunkie.tweetr.oauth.OAuth;
-   import com.swfjunkie.tweetr.oauth.events.OAuthEvent;
+    import com.swfjunkie.tweetr.oauth.events.OAuthEvent;
 	
 	import com.swfjunkie.tweetr.events.TweetEvent;
 	import com.swfjunkie.tweetr.utils.TweetUtil;
 	import com.swfjunkie.tweetr.data.objects.StatusData;
-	import com.swfjunkie.tweetr.data.objects.SearchResultData;
+	import com.swfjunkie.tweetr.data.objects.SearchResultData*/
 	
 	import flash.display.Sprite;
     import flash.geom.Rectangle;
@@ -124,12 +125,16 @@
 	import com.adobe.serialization.json.JSON;
 	import com.adobe.serialization.json.JSONParseError;
 	
+	//Library we use for Twitter
 	import isle.susisu.twitter.Twitter;
 	import isle.susisu.twitter.TwitterRequest;
 	import isle.susisu.twitter.TwitterTokenSet;
 	import isle.susisu.twitter.events.TwitterErrorEvent;
 	import isle.susisu.twitter.events.TwitterRequestEvent;
 	import isle.susisu.twitter.utils.objectToQueryString;
+	
+	
+	
 	
 				
 	public class mirror extends MovieClip {
@@ -821,8 +826,8 @@
 	private var last_tweet:String;		
 	private var tweet_over_100:int = 0;
 	private var TwitterTimer:Timer;
-    private var tweetr:Tweetr;
-	private var oauth:OAuth;
+   // private var tweetr:Tweetr;
+	//private var oauth:OAuth;
     private var htmlLoader:HTMLLoader;
 	
 	private var request:TwitterRequest;
@@ -1215,18 +1220,38 @@
 	private var CountdownTimerCounter:int;
 	
 	private var _twitter:Twitter;
-		private var _token:TwitterTokenSet;
+	private var _token:TwitterTokenSet;
 
-		private var _stage:Stage;
-		
-		private var _mentionedSinceID:String;
-		private var _mentions:Vector.<MentionModel>;
-		private var _mentionChecker:Timer;
-		
-		private var _searchSinceID:String;
-		private var _search:Vector.<SearchModel>;
-		private var __searchChecker:Timer;
+	private var _stage:Stage;
 	
+	private var _mentionedSinceID:String;
+	private var _mentions:Vector.<MentionModel>;
+	private var _mentionChecker:Timer;
+	
+	private var _searchSinceID:String;
+	private var _search:Vector.<SearchModel>;
+	private var __searchChecker:Timer;
+	
+	private	var headers:Array = [];
+	private var requestVars:URLVariables;
+	private	var TTSrequest:URLRequest;
+	private var TTSloader:URLLoader;
+	private var TTSTotalBytes:int  = 0;
+	
+	
+	private	var YakitomeURLHeader:Array = [];
+	private var Yakitometts_stream:Sound = new Sound();
+	private var Yakitometts_channel:SoundChannel = new SoundChannel();
+	private var YakitomeURLLoader:URLLoader;
+	private var YakitomeURLRequestVars:URLVariables;
+	private var YakitomeURLRequest:URLRequest;
+	private var TTSBookIDTimer:Timer;
+	private var bookIDData:Object;
+	private var TTSmp3Status:Object;
+	private var YakitomeResponse:String;
+	
+	private var TTSengine:String = "voicerss";
+	private var _functionToCall:String;
 	
 	//*****************************************************
 	
@@ -1237,7 +1262,7 @@
 		
 	//private var X10_ADDRESS:String;
 	///******************************************	
-	var service : PicasaService = new PicasaService();	
+	//var service : PicasaService = new PicasaService();	
 	
 		//// ***************************************////
 	public function mirror():void {
@@ -1252,8 +1277,8 @@
 			window.maximize();  
 			BuildUI();
 			
-			service.imgmax = "1600";	// 1600 largest size possible to use from Picasa
-			service.thumbsize = "64c";  // not used
+			//service.imgmax = "1600";	// 1600 largest size possible to use from Picasa
+			//service.thumbsize = "64c";  // not used
 				
 			AlertTextFormat.color = 0x000000; //black
 			AlertTextFormat.font = myFont.fontName;
@@ -1345,7 +1370,7 @@
 			//trace (myXML);
 			filestream.close();									
 			
-			if (Number(myXML.version) < 7.0) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
+			if (Number(myXML.version) < 7.8) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
 				AlertManager.createAlert(this, "Your configuration file is an older version, please exit this program now and run the Configuration program which will update your configuration file while maintaining your existing configuration settings.");
 			}
 			
@@ -1359,8 +1384,8 @@
 			picture_rotation = myXML.picture_rotation;
 			picture_scale = myXML.picture_scale;			
 			//Stage.showMenu = false;
-			var responder : PicasaResponder = service.photos.list(google_id, picasa_album_id);
-			responder.addEventListener(PicasaDataEvent.DATA, onGetAlbumsComplete);
+			/*var responder : PicasaResponder = service.photos.list(google_id, picasa_album_id);  //google stop supporting flash
+			responder.addEventListener(PicasaDataEvent.DATA, onGetAlbumsComplete);*/
 			
 			
 			//responder.addEventListener(ErrorEvent.ERROR, onError);				
@@ -2669,9 +2694,9 @@
 	  //********* let's check for Internet connectivity************
 				var loader:URLLoader = new URLLoader();
 				configureListenersInternetCheck(loader);
-				var request:URLRequest = new URLRequest("http://www.google.com");
+				var requestInternetCheck:URLRequest = new URLRequest("http://www.google.com");
 				try {
-				  loader.load(request);
+				  loader.load(requestInternetCheck);
 				} catch (error:Error) {
 					trace("Unable to load requested document.");
 				}
@@ -3430,16 +3455,16 @@
 	//	loadJPGs(); //loop			
 	//}
 	
-	public function onGetAlbumsComplete(evt : PicasaDataEvent) : void
-	{
-		var item : Object;	
-		for(var a : int = 0; a < evt.data.entries.length; a++)
-		{
-			item = evt.data.entries[a];
-			imageArray.push(item.media.content.url); //add the URL of each image to the imageArray			
-		}		
-		PicasaLoaded = 1; //set this flag so the rest of the program knows it loaded correctly
-	}
+	//public function onGetAlbumsComplete(evt : PicasaDataEvent) : void   //google stopped supporting this api
+	//{
+	//	var item : Object;	
+	//	for(var a : int = 0; a < evt.data.entries.length; a++)
+	//	{
+	//		item = evt.data.entries[a];
+	//		imageArray.push(item.media.content.url); //add the URL of each image to the imageArray			
+	//	}		
+	//	PicasaLoaded = 1; //set this flag so the rest of the program knows it loaded correctly
+	//}
 	
 	 function StartSlideShowButton(event:MouseEvent):void {  			
 				StartSlideShow(); 				
@@ -3467,7 +3492,6 @@
 					}
 					
 					pic.visible = true;
-					//trace(imageArray);
 					URLString = imageArray[i];
 					pic.source = URLString		
 					imageTimer = new Timer(slide_delay_seconds);
@@ -4359,31 +4383,46 @@
 				sound_playing = 1; //set the sound playing flag so something else doesn't play			
 				
 				if (tts_stream !=null) {
-						tts_stream = new Sound(); //try catch, problem is tts stream is null
+						tts_stream = new Sound(); 
 						
-						var loader:URLLoader = new URLLoader();
-						configureListeners(loader);
-						//var header:URLRequestHeader = new URLRequestHeader("Referer","http://translate.google.com/");		
-						var request:URLRequest = new URLRequest();
-						if (tts_sendheader != "off") {
-							var header:URLRequestHeader = new URLRequestHeader(tts_headername,tts_headervalue);			
-							request = new URLRequest(generateAudioURL(value));
-							request.method = URLRequestMethod.GET;
-							request.requestHeaders.push(header);
+						if (myXML.tts_engine == "voicerss") {
+							  VoiceRSSTTSLoaderCall(value);
+							  playMP3say();
 						}
-						else {
-							request = new URLRequest(generateAudioURL(value));
+						else if (myXML.tts_engine == "yakitome") {  //because Yakitome has a delay and it's not instant, we can't just call the playmp3 right away, we have to wait until we get the mp3 and then we'll call it from the end of the Yakitome function
+							  YakitomeTTSLoader(value,"say");
 						}
-						 
-						try {
-							loader.load(request);
-						} catch (error:Error) {
-							trace("Unable to load TTS");
-							//ResetVideoFlags();
-							//return;
+						else {  									//we shouldn't ever go here
+							VoiceRSSTTSLoaderCall(value);
+							playMP3say();
 						}
+				}
+				
+				
+					//*****  old google tts code , google killed the public tts api so we had to stop using it
+						//var loader:URLLoader = new URLLoader();
+						//configureListeners(loader);
+						////var header:URLRequestHeader = new URLRequestHeader("Referer","http://translate.google.com/");		
+						//var request:URLRequest = new URLRequest();
+						//if (tts_sendheader != "off") {
+						//	var header:URLRequestHeader = new URLRequestHeader(tts_headername,tts_headervalue);			
+						//	request = new URLRequest(generateAudioURL(value));
+						//	request.method = URLRequestMethod.GET;
+						//	request.requestHeaders.push(header);
+						//}
+						//else {
+						//	request = new URLRequest(generateAudioURL(value));
+						//}
+						// 
+						//try {
+						//	loader.load(request);
+						//} catch (error:Error) {
+						//	trace("Unable to load TTS");
+						//	//ResetVideoFlags();
+						//	//return;
+						//}
 								
-						tts_stream.load(request);
+					/*	tts_stream.load(TTSrequest);
 						tts_channel = tts_stream.play();						
 						tts_channel.addEventListener(Event.SOUND_COMPLETE,TTSSoundDone);			
 						tts_channel.addEventListener (IOErrorEvent.IO_ERROR, TTSPlayError);
@@ -4392,18 +4431,42 @@
 							LipsyncTimer.addEventListener(TimerEvent.TIMER,  processSound);
 							LipsyncTimer.start();
 						}
-						}
+					}
 					else {
 						trace("say tts stream was null so we had to exit out early");
 						trace("went to speak tweet error handler");
 						switch_mode();
 						ResetVideoFlags();
-					}
+					}*/
 					//} catch (error:Error) {
 						//trace("error loading tts_stream");
 						//ResetVideoFlags();
 						//return;
 					//}
+				
+				
+				
+		}
+		
+		private function playMP3say():void {
+
+				tts_stream.load(TTSrequest);
+				tts_channel = tts_stream.play();						
+				tts_channel.addEventListener(Event.SOUND_COMPLETE,TTSSoundDone);			
+				tts_channel.addEventListener (IOErrorEvent.IO_ERROR, TTSPlayError);
+									
+				if (myXML.lipsync_feature == "on") {
+					LipsyncTimer.addEventListener(TimerEvent.TIMER,  processSound);
+					LipsyncTimer.start();
+				}
+					
+				else {
+					trace("say tts stream was null so we had to exit out early");
+					trace("went to speak tweet error handler");
+					switch_mode();
+					ResetVideoFlags();
+				}
+			
 		}
 		
 		private function say_breathalyzer(value:String):void
@@ -4412,37 +4475,31 @@
 				sound_playing = 1; //set the sound playing flag so something else doesn't play			
 							
 				tts_stream = new Sound(); 
-				var loader:URLLoader = new URLLoader();
-				configureListeners(loader);
-				//var header:URLRequestHeader = new URLRequestHeader("Referer","http://translate.google.com/");		
-				var request:URLRequest = new URLRequest();
-				if (tts_sendheader != "off") {
-					var header:URLRequestHeader = new URLRequestHeader(tts_headername,tts_headervalue);			
-					request = new URLRequest(generateAudioURL(value));
-					request.method = URLRequestMethod.GET;
-					request.requestHeaders.push(header);
+				
+				if (myXML.tts_engine == "voicerss") {
+					  VoiceRSSTTSLoaderCall(value);
+					  playMP3say_breathalyzer();
+				}
+				else if (myXML.tts_engine == "yakitome") {
+					  YakitomeTTSLoader(value,"say_breathalyzer");
 				}
 				else {
-					request = new URLRequest(generateAudioURL(value));
+					 VoiceRSSTTSLoaderCall(value);
+					 playMP3say_breathalyzer();
 				}
-					 
-				try {
-					loader.load(request);
-				} catch (error:Error) {
-					trace("Unable to load TTS");
-				}
-						
-				tts_stream.load(request);
-				tts_channel = tts_stream.play();						
-				//tts_channel.addEventListener(Event.SOUND_COMPLETE,TTSSoundDone);			
-				tts_channel.addEventListener(Event.SOUND_COMPLETE,CustomSoundDoneBreathalyzer);	
-				
-				if (myXML.lipsync_feature == "on") {
-					LipsyncTimer.addEventListener(TimerEvent.TIMER,  processSound);
-					LipsyncTimer.start();
-				}
-			
 		}
+		
+	private function playMP3say_breathalyzer():void {
+	
+			tts_stream.load(TTSrequest);
+			tts_channel = tts_stream.play();		
+			tts_channel.addEventListener(Event.SOUND_COMPLETE,CustomSoundDoneBreathalyzer);	
+			
+			if (myXML.lipsync_feature == "on") {
+				LipsyncTimer.addEventListener(TimerEvent.TIMER,  processSound);
+				LipsyncTimer.start();
+			}
+	}
 		
 		
 	private function generateAudioURL(value:String):String
@@ -4458,31 +4515,24 @@
 		
 		{			 
 			sound_playing = 1; 
-			
 			tts_stream_breath = new Sound(); 
-			var loader_breath:URLLoader = new URLLoader();
-            var request_breath:URLRequest = new URLRequest();
-			if (tts_sendheader != "off") {
-				var header_breath:URLRequestHeader = new URLRequestHeader(tts_headername,tts_headervalue);			
-				request_breath = new URLRequest(generateAudioURL_breath(value));
-				request_breath.method = URLRequestMethod.GET;
-				request_breath.requestHeaders.push(header_breath);
+			
+			if (myXML.tts_engine == "voicerss") {
+				  VoiceRSSTTSLoaderCall(value);
+				  playMP3say_breath();
+			}
+			else if (myXML.tts_engine == "yakitome") {
+				  YakitomeTTSLoader(value,"say_breath");
 			}
 			else {
-				request_breath = new URLRequest(generateAudioURL_breath(value));
-			}
-			
-            try {
-                loader_breath.load(request_breath);
-            } catch (error:Error) {
-                trace("Unable to load requested document.");
-            }			
-					
-			tts_stream_breath.load(request_breath);
+				VoiceRSSTTSLoaderCall(value);
+				playMP3say_breath();
+			}		
+		}
+		
+		private function playMP3say_breath():void {
+			tts_stream_breath.load(TTSrequest);
 			tts_stream_breath.play();			//this one doesn't need the soundchannel because nothing needs to happen after the breathalyzer prompts sounds play
-			
-			
-						
 		}
 		
 		private function say_breath_custom_audio(value:String):void //we need a separate one for the brethalyzer prompts because those should not call the ResetVideoFlags that comes from when the other sounds are done playing
@@ -4493,7 +4543,7 @@
 							
 			custom_audio_sound = new Sound(); 
 			var loader:URLLoader = new URLLoader();
-			configureListeners(loader);
+			configureListenersVoiceRSS(loader);
 			
 			var request = new URLRequest(value);
 				 
@@ -4537,33 +4587,60 @@
 			}
 		}
 		
+		private function VoiceRSSTTSLoaderCall(value:String): void {
+			
+			
+			TTSrequest = new URLRequest(myXML.ttsrss_url);
+			TTSrequest.requestHeaders = headers;
+			requestVars = new URLVariables();
+			requestVars.key = myXML.ttsrss_apikey;
+			requestVars.src = value;
+			requestVars.hl = myXML.ttsrss_language;
+			requestVars.c = "MP3";
+			requestVars.f = myXML.ttsrss_mp3samplerate;
+			
+			TTSrequest.data = requestVars;
+			TTSrequest.method = URLRequestMethod.GET;
+			
+			TTSloader = new URLLoader();
+			TTSloader.dataFormat = 'binary';  //we're downloading a raw wav file
+			
+			configureListenersVoiceRSS(TTSloader);  //to do should add here in case TTS bombs out
+							 
+			try    {
+				TTSloader.load(TTSrequest);
+				trace("TTS URL Loaded");
+			}
+			catch (error:Error)    {
+				trace("Unable to load TTS URL" + error);
+			}
+		}
 		
-		private function say_tweet1(value:String):void
 		
-		{					
+		private function say_tweet1(value:String):void   {
+		
+							
 				if (tts_stream_tweet1 !=null) {
 					sound_playing = 1;
-					tts_stream_tweet1 = new Sound(); 
-					var loader_tweet1:URLLoader = new URLLoader();
-					configureListeners(loader_tweet1);	
-					var request_tweet1:URLRequest = new URLRequest();
-				
-					var header_tweet1:URLRequestHeader = new URLRequestHeader(tts_headername,tts_headervalue);			
-					request_tweet1 = new URLRequest(generateAudioURL(value));
-					request_tweet1.method = URLRequestMethod.GET;
-					request_tweet1.requestHeaders.push(header_tweet1);
-				
-					 
-					try {
-						loader_tweet1.load(request_tweet1);
-					} catch (error:Error) { //add try catch here
-						trace("Unable to load TTS");
-						//ResetVideoFlags();
-						//return;
+					
+					if (myXML.tts_engine == "voicerss") {
+						  VoiceRSSTTSLoaderCall(value);
+						  playMP3say_tweet1();
 					}
-							
-					tts_stream_tweet1.load(request_tweet1);
-					tts_channel_tweet1 = tts_stream_tweet1.play();							
+					else if (myXML.tts_engine == "yakitome") {
+						  YakitomeTTSLoader(value,"say_tweet1");
+					}
+					else {
+						 VoiceRSSTTSLoaderCall(value);
+						 playMP3say_tweet1();
+					}	
+				}	
+					
+					/*tts_stream_tweet1 = new Sound(); 
+				
+					tts_stream_tweet1.load(TTSrequest);
+					tts_channel_tweet1 = tts_stream_tweet1.play();	
+					
 					tts_channel_tweet1.addEventListener(Event.SOUND_COMPLETE,TTSSoundDoneTweet1);	
 					tts_channel_tweet1.addEventListener (IOErrorEvent.IO_ERROR, TTSPlayError);
 					
@@ -4571,58 +4648,78 @@
 						LipsyncTimer.addEventListener(TimerEvent.TIMER,  processSound);
 						LipsyncTimer.start();
 					}
-					}
+				}
 				
 				else {
 					trace("tts stream tweet1 was null");
 					switch_mode();
 					ResetVideoFlags();
-				}
+				}*/
+	}
+	
+	private function playMP3say_tweet1():void {
+		
+					tts_stream_tweet1 = new Sound(); 
+				
+					tts_stream_tweet1.load(TTSrequest);
+					tts_channel_tweet1 = tts_stream_tweet1.play();	
+					
+					tts_channel_tweet1.addEventListener(Event.SOUND_COMPLETE,TTSSoundDoneTweet1);	
+					tts_channel_tweet1.addEventListener (IOErrorEvent.IO_ERROR, TTSPlayError);
+					
+					if (myXML.lipsync_feature == "on") {
+						LipsyncTimer.addEventListener(TimerEvent.TIMER,  processSound);
+						LipsyncTimer.start();
+					}
+				
+					else {
+						trace("tts stream tweet1 was null");
+						switch_mode();
+						ResetVideoFlags();
+					}
+	}
+		
+		
+	private function say_tweet2(value:String):void   {
+		
+						
+				if (tts_stream_tweet2 !=null) {
+
+					tts_stream_tweet2 = new Sound(); //add the try catch
+					
+						if (myXML.tts_engine == "voicerss") {
+							  VoiceRSSTTSLoaderCall(value);
+							  playMP3say_tweet2();
+						}
+						else if (myXML.tts_engine == "yakitome") {
+							  YakitomeTTSLoader(value,"say_tweet2");
+						}
+						else {
+							 VoiceRSSTTSLoaderCall(value);
+							 playMP3say_tweet2();
+						}	
+				}		
+			
 		}
 		
+	private function playMP3say_tweet2():void {
 		
-	private function say_tweet2(value:String):void
-		
-		{				
-				if (tts_stream_tweet2 !=null) {
-					tts_stream_tweet2 = new Sound(); //add the try catch
-						var loader_tweet2:URLLoader = new URLLoader();
-						configureListeners(loader_tweet2);	
-						var request_tweet2:URLRequest = new URLRequest();
-						
-							var header_tweet2:URLRequestHeader = new URLRequestHeader(tts_headername,tts_headervalue);			
-							request_tweet2 = new URLRequest(generateAudioURL(value));
-							request_tweet2.method = URLRequestMethod.GET;
-							request_tweet2.requestHeaders.push(header_tweet2);
-						
-							 
-						try {
-							loader_tweet2.load(request_tweet2);
-						} catch (error:Error) {
-							trace("Unable to load TTS");
-							//ResetVideoFlags();
-							//return;
-						}				
-								
-						tts_stream_tweet2.load(request_tweet2);
-						tts_channel_tweet2 = tts_stream_tweet2.play();							
-						tts_channel_tweet2.addEventListener(Event.SOUND_COMPLETE,TTSSoundDoneTweet2);
-						tts_channel_tweet2.addEventListener (IOErrorEvent.IO_ERROR, TTSPlayError);
-						
-						if (myXML.lipsync_feature == "on") {
-							LipsyncTimer.addEventListener(TimerEvent.TIMER,  processSound);
-							LipsyncTimer.start();
-						}
-				}
+				tts_stream_tweet2.load(TTSrequest);
 				
+				tts_channel_tweet2 = tts_stream_tweet2.play();							
+				tts_channel_tweet2.addEventListener(Event.SOUND_COMPLETE,TTSSoundDoneTweet2);
+				tts_channel_tweet2.addEventListener (IOErrorEvent.IO_ERROR, TTSPlayError);
+				
+				if (myXML.lipsync_feature == "on") {
+					LipsyncTimer.addEventListener(TimerEvent.TIMER,  processSound);
+					LipsyncTimer.start();
+				}
 				else {
 						trace("tts stream tweet2 was null");
 						switch_mode();
 						ResetVideoFlags();
 				}
-				
-			
-		}
+	}
 		
 	private function _setHandlersForRequest(request:TwitterRequest, completeHandler:Function):void
 		{
@@ -4636,7 +4733,7 @@
 		private function _verifyCompleteHandler(event:TwitterRequestEvent):void
 		{
 			dispatchEvent(new Event(Event.COMPLETE));
-			trace("we've succesulled auth!");
+			trace("We've successfully oauth'd to Twitter!");
 			//tweet("hello there 2");
 			
 			///tweetr.addEventListener(TweetEvent.COMPLETE, handleTweetsLoaded);
@@ -4669,7 +4766,7 @@
 			//var request:TwitterRequest = _twitter.search_tweets("speakmirror");
 			
 			
-		  trace("went to the initial get tweets");
+		  trace("Entered retrieve Tweets function called _getTweets");
 		  
 		  var request:TwitterRequest;
 			
@@ -4685,6 +4782,7 @@
 		  
 		  if (twitter_mode == "mentions") {				  
 					//tweetr.getHomeTimeLine(); //this gets all tweets from the user's login 
+					trace("We are in Twitter Mentions Mode");
 					request = _twitter.statuses_mentionsTimeline(1);
 		  }
 		  
@@ -4721,7 +4819,6 @@
 
 			Susisu
 			*/
-
 			
 			_mentions = new Vector.<MentionModel>;
 
@@ -4781,6 +4878,7 @@
 			
 			if (twitter_mode == "mentions") {	
 				full_tweet = full_tweet;
+				trace("Mentions mode: " + full_tweet);
 			}
 			
 			//else {
@@ -4894,6 +4992,279 @@
 			
 			ResetVideoFlags();
 			
+		}
+		
+		public function YakitomeTTSLoader(value:String, functionToCall:String) {
+			
+			
+			/*Here's home the Yakitome API works
+			First we have to make a request and then the book id is returned
+			Then we have to check if the MP3 is ready, we do this with a Timer and make calls until MP3 is ready
+			Once the MP3 is ready, we get a URL returned to us with the MP3 file
+			Then lastly we load this MP3 and now have it in Flash */
+			
+			//The possibles voices are:{"free": {"German": [["de", "Female", "Klara"], ["de", "Male", "Reiner"]], "Spanish": [["es", "Male", "Alberto"]], "French": [["ca", "Male", "Arnaud"], ["fr", "Female", "Juliette"], ["fr", "Male", "Alain"]], "English": [["gb", "Female", "Anjali"], ["gb", "Female", "Audrey"], ["us", "Female", "Crystal"], ["us", "Female", "Julia"], ["us", "Female", "Lauren"], ["us", "Female", "Randy"], ["us", "Male", "Dave"], ["us", "Male", "Mike"]]}
+			 
+
+			_functionToCall = functionToCall; //we need this later so had to make it global
+			
+			YakitomeURLRequest = new URLRequest(myXML.ttsyakitome_resturl);
+			YakitomeURLRequest.requestHeaders = YakitomeURLHeader;
+			
+			YakitomeURLRequestVars = new URLVariables();
+			YakitomeURLRequestVars.api_key = myXML.ttsyakitome_api_key;
+			//YakitomeURLRequestVars.api_key = "4353452345";
+			YakitomeURLRequestVars.text = value;
+			YakitomeURLRequestVars.voice = myXML.ttsyakitome_voice;
+			YakitomeURLRequestVars.speed = myXML.ttsyakitome_speed;
+			
+			YakitomeURLRequest.data = YakitomeURLRequestVars;
+			// set the request's method to POST
+			YakitomeURLRequest.method = URLRequestMethod.GET;
+			 
+			// build the loader..
+			YakitomeURLLoader = new URLLoader();
+			 
+			// set the format to text (or whatever you want. URLRequest can be used with other objects too)
+			YakitomeURLLoader.dataFormat = URLLoaderDataFormat.TEXT;
+			 
+			configureListenersYakitome(YakitomeURLLoader);
+			 
+			try    {
+				YakitomeURLLoader.load(YakitomeURLRequest);
+                trace("Loaded:" + YakitomeURLRequest);
+            }
+            catch (error:Error)    {
+                trace("Unable to load URL" + error);
+            }
+		}
+		
+		private function configureListenersYakitome(dispatcher:IEventDispatcher):void {
+				dispatcher.addEventListener(Event.COMPLETE, YakitomecompleteHandler);
+				dispatcher.addEventListener(Event.OPEN, YakitomeopenHandler);
+				dispatcher.addEventListener(ProgressEvent.PROGRESS, YakitomeprogressHandler);
+				dispatcher.addEventListener(SecurityErrorEvent.SECURITY_ERROR, YakitomesecurityErrorHandler);
+				dispatcher.addEventListener(HTTPStatusEvent.HTTP_STATUS, YakitomehttpStatusHandler);
+				dispatcher.addEventListener(IOErrorEvent.IO_ERROR, YakitomeioErrorHandler);
+        }
+
+        private function YakitomecompleteHandler(event:Event):void {
+			removeEventListener(Event.COMPLETE, YakitomecompleteHandler);
+			removeEventListener(Event.COMPLETE, YakitomeopenHandler);
+			removeEventListener(Event.COMPLETE, YakitomeprogressHandler);
+			removeEventListener(Event.COMPLETE, YakitomesecurityErrorHandler);
+			removeEventListener(Event.COMPLETE, YakitomehttpStatusHandler);
+			removeEventListener(Event.COMPLETE, YakitomeioErrorHandler);
+			
+			trace("compete Handler");
+			
+			YakitomeResponse = event.target.data as String;
+			trace(YakitomeResponse);
+			
+			bookIDData = JSON.parse(YakitomeResponse);
+			trace("The answer is " + bookIDData.eta+" ; "+ bookIDData.msg+" ; "+bookIDData.book_id);
+			
+			//https://www.yakitome.com/api/rest/status?api_key=qha4ndDY1amd3_BCGuD65HO&book_id=1806397
+			//https://www.yakitome.com/api/rest/audio?api_key=qha4ndDY1amd3_BCGuD65HO&book_id=1806298&format=mp3
+			
+			if (bookIDData.msg == "INVALID API_KEY") {
+				trace ("Yakitome API key is wrong");
+				AlertManager.createAlert(this, "The Text to Speech Internet call failed. Either the credits for this demo account from our Internet Text to Speech provider, Yakitome, have been used up or it's an incorrect key." + "\n" + "Please go to http://www.yakitome.com/ and create an account for you (it's free as long as your usage is not high volume). Enter your API key in either the DIY Magic Mirror Advanced or Basic Config programs, add your API Key in the Voice RSS API Key Field, and then re-start this program.");
+			}
+			
+			else {
+				//we need to add a delay here
+				TTSBookIDTimer = new Timer(500, 100);  //we'll call it 100 times every 1/2 second until it's done processing
+				TTSBookIDTimer.addEventListener(TimerEvent.TIMER, TTSBookIDTimerDone);
+				TTSBookIDTimer.start();
+			}
+			
+		}
+		
+		private function TTSBookIDTimerDone(e:TimerEvent):void{
+				 trace("Times Fired: " + e.currentTarget.currentCount);
+				 trace("Time Delayed: " + e.currentTarget.delay);
+			
+				// set the headers on the URLRequest object
+				YakitomeURLRequest = new URLRequest(myXML.ttsyakitome_audiourl);
+				YakitomeURLRequest.requestHeaders = YakitomeURLHeader;
+				YakitomeURLRequestVars = new URLVariables();
+				YakitomeURLRequestVars.api_key = myXML.ttsyakitome_api_key;
+				YakitomeURLRequestVars.book_id = bookIDData.book_id;
+				YakitomeURLRequestVars.format = "mp3";
+				
+				YakitomeURLRequest.data = YakitomeURLRequestVars;
+				trace(YakitomeURLRequest.data);
+				YakitomeURLRequest.method = URLRequestMethod.GET;
+				 
+				// build the loader..
+				YakitomeURLLoader = new URLLoader();
+				YakitomeURLLoader.dataFormat = URLLoaderDataFormat.TEXT;
+				 
+				YakitomeconfigureListenersBookID(YakitomeURLLoader);
+				 
+				try    {
+					YakitomeURLLoader.load(YakitomeURLRequest);
+					trace("Loaded TTS MP3 Status:");
+				}
+				catch (error:Error)    {
+					trace("Unable to load URL" + error);
+				}
+        }
+		
+		 private function YakitomeopenHandler(event:Event):void {
+            trace("openHandler: " + event);
+        }
+
+        private function YakitomeprogressHandler(event:ProgressEvent):void {
+            trace("Yakitome progressHandler loaded:" + event.bytesLoaded + " total: " + event.bytesTotal);
+        }
+
+        private function YakitomesecurityErrorHandler(event:SecurityErrorEvent):void {
+            trace("securityErrorHandler: " + event);
+        }
+
+        private function YakitomehttpStatusHandler(event:HTTPStatusEvent):void {
+            trace("httpStatusHandler: " + event);
+        }
+
+        private function YakitomeioErrorHandler(event:IOErrorEvent):void {
+            trace("ioErrorHandler: " + event);
+        }	
+		
+		
+		private function YakitomeconfigureListenersBookID(dispatcher:IEventDispatcher):void {
+				dispatcher.addEventListener(Event.COMPLETE, YakitomecompleteHandlerBookID);
+				dispatcher.addEventListener(Event.OPEN, YakitomeopenHandlerBookID);
+				dispatcher.addEventListener(ProgressEvent.PROGRESS, YakitomeprogressHandlerBookID);
+				dispatcher.addEventListener(SecurityErrorEvent.SECURITY_ERROR, YakitomesecurityErrorHandlerBookID);
+				dispatcher.addEventListener(HTTPStatusEvent.HTTP_STATUS, YakitomehttpStatusHandlerBookID);
+				dispatcher.addEventListener(IOErrorEvent.IO_ERROR, YakitomeioErrorHandlerBookID);
+        }
+		
+		private function YakitomehttpStatusHandlerBookID(event:Event):void {
+			 trace("book id http status handler: " + event);
+		}	
+		
+		private function YakitomeioErrorHandlerBookID(event:Event):void {
+			 trace("book id io error handler");
+		}	
+		
+		private function YakitomeopenHandlerBookID(event:Event):void {
+            trace("book id openHandler: " + event);
+        }
+
+        private function YakitomeprogressHandlerBookID(event:ProgressEvent):void {
+            trace("book idprogressHandler loaded:" + event.bytesLoaded + " total: " + event.bytesTotal);
+        }
+
+        private function YakitomesecurityErrorHandlerBookID(event:SecurityErrorEvent):void {
+            trace("book id securityErrorHandler: " + event);
+        }
+
+        private function YakitomecompleteHandlerBookID(event:Event):void {
+			
+			YakitomeResponse = event.target.data as String;
+			trace(YakitomeResponse);
+			
+			TTSmp3Status = JSON.parse(YakitomeResponse);
+			trace("ttsmp3status " + TTSmp3Status.status + " " + TTSmp3Status.audios);
+			
+			if (TTSmp3Status.status == "TTS DONE") {
+				
+				TTSBookIDTimer.stop();
+				
+				//now let's play the mp3
+				
+				TTSrequest = new URLRequest(TTSmp3Status.audios);
+				 
+				// build the loader..
+				YakitomeURLLoader = new URLLoader();
+				YakitomeURLLoader.dataFormat = 'binary'; 
+				 
+				YakitomeconfigureListenersMP3Play(YakitomeURLLoader);
+				 
+				try    {
+					// load the request..
+					YakitomeURLLoader.load(TTSrequest);
+					trace("Loaded TTS MP3 Status:");
+				}
+				catch (error:Error)    {
+					trace("Unable to load URL" + error);
+				}
+				
+				//now we have the MP3 so let's call the appropriate funciton to play it, each respective function will have it's own post handler
+				
+				switch(_functionToCall)
+					{
+					  case "say":
+						playMP3say();
+					  break;
+					  case "say_breathalyzer":
+						playMP3say_breathalyzer();
+					  break;
+					  case "say_breath":
+						  playMP3say_breath();
+					  break;
+					  case "say_tweet1":
+						  playMP3say_tweet1();
+					  break;
+					  case "say_tweet2":
+						  playMP3say_tweet2();
+					  break;
+					  default:
+						 trace("From Yakitome switch statement, could not find a matching TTS MP3 call to go to");
+					}
+				
+			}
+		}	
+		
+	
+		private function YakitomeconfigureListenersMP3Play(dispatcher:IEventDispatcher):void {
+				dispatcher.addEventListener(Event.COMPLETE, YakitomecompleteHandlerMP3Play);
+				dispatcher.addEventListener(Event.OPEN, YakitomeopenHandlerMP3Play);
+				dispatcher.addEventListener(ProgressEvent.PROGRESS, YakitomeprogressHandlerMP3Play);
+				dispatcher.addEventListener(SecurityErrorEvent.SECURITY_ERROR, YakitomesecurityErrorHandlerMP3Play);
+				dispatcher.addEventListener(HTTPStatusEvent.HTTP_STATUS, YakitomehttpStatusHandlerMP3Play);
+				dispatcher.addEventListener(IOErrorEvent.IO_ERROR, YakitomeioErrorHandlerMP3Play);
+        }
+		
+		private function YakitomehttpStatusHandlerMP3Play(event:Event):void {
+			 trace("mp3 play http status" + event);
+		}	
+		
+		private function YakitomeioErrorHandlerMP3Play(event:Event):void {
+			 trace("io error for mp3 play");
+		}	
+		
+		private function YakitomeopenHandlerMP3Play(event:Event):void {
+            trace("mp3 play book id openHandler: " + event);
+        }
+
+        private function YakitomeprogressHandlerMP3Play(event:ProgressEvent):void {
+            trace("mp3 play progressHandler loaded:" + event.bytesLoaded + " total: " + event.bytesTotal);
+        }
+
+        private function YakitomesecurityErrorHandlerMP3Play(event:SecurityErrorEvent):void {
+            trace("book id securityErrorHandler: " + event);
+        }
+
+        private function YakitomecompleteHandlerMP3Play(event:Event):void {
+			trace("mp3 played complete handler");
+			removeEventListener(Event.COMPLETE, YakitomecompleteHandlerBookID);
+			removeEventListener(Event.COMPLETE, YakitomeopenHandlerBookID);
+			removeEventListener(Event.COMPLETE, YakitomeprogressHandlerBookID);
+			removeEventListener(Event.COMPLETE, YakitomesecurityErrorHandlerBookID);
+			removeEventListener(Event.COMPLETE, YakitomehttpStatusHandlerBookID);
+			removeEventListener(Event.COMPLETE, YakitomeioErrorHandlerBookID);
+			
+			removeEventListener(Event.COMPLETE, YakitomecompleteHandlerMP3Play);
+			removeEventListener(Event.COMPLETE, YakitomeopenHandlerMP3Play);
+			removeEventListener(Event.COMPLETE, YakitomeprogressHandlerMP3Play);
+			removeEventListener(Event.COMPLETE, YakitomesecurityErrorHandlerMP3Play);
+			removeEventListener(Event.COMPLETE, YakitomehttpStatusHandlerMP3Play);
+			removeEventListener(Event.COMPLETE, YakitomeioErrorHandlerMP3Play);
+				
 		}
 
 
@@ -5101,10 +5472,10 @@
 				
 			}
 			
-			private function handleTweetsFail(event:TweetEvent):void
+			/*private function handleTweetsFail(event:TweetEvent):void
             {
                 trace ("Twiiter Call Failed");
-            }	
+            }	*/
 	
 	
 	private function generateAudioURL_breath(value:String):String
@@ -5116,8 +5487,13 @@
 			return generatedString_breath;
 		}	
 		
-	  private function configureListeners(dispatcher:IEventDispatcher):void {
-             dispatcher.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
+	  private function configureListenersVoiceRSS(dispatcher:IEventDispatcher):void {
+             dispatcher.addEventListener(IOErrorEvent.IO_ERROR, VoiceRSSioErrorHandler);
+			 dispatcher.addEventListener(SecurityErrorEvent.SECURITY_ERROR, VoiceRSSsecurityErrorHandler);
+			 dispatcher.addEventListener(HTTPStatusEvent.HTTP_STATUS, VoiceRSShttpStatusHandler);
+			 //dispatcher.addEventListener(IOErrorEvent.IO_ERROR, VoiceRSSioErrorHandler);
+		     dispatcher.addEventListener(ProgressEvent.PROGRESS, VoiceRSSprogressHandler);
+		     dispatcher.addEventListener(Event.COMPLETE, VoiceRSScompleteHandler);
         }   
 		
 	  private function configureListenersCustomAudio(dispatcher:IEventDispatcher):void {
@@ -5148,7 +5524,7 @@
 			WarningMessageClearTimer.start(); //clears the warning text
         }
 
-       private function ioErrorHandler(event:IOErrorEvent):void {
+       private function VoiceRSSioErrorHandler(event:IOErrorEvent):void {
             trace("TTSioErrorHandler: " + event);
 			//sometimes tts gives a hiccup but continues to work so let's not show this
 			//mirror_did_not_init_text.text = "I could not access the Web based Text to Speech API, please check your Internet connection";
@@ -5158,6 +5534,33 @@
 			trace("went to the tts mode io Error handler");
 			switch_mode();
 			ResetVideoFlags();
+        }
+		
+		private function VoiceRSScompleteHandler(event:Event):void {  //this gets called after the TTS API call. If the total bytes returned is too small, then it means this call didn't go as planned
+			  
+			 if (TTSTotalBytes < 50) {
+					trace("TTS failed, most likely the TTS engine API key is used up or wrong, check that");
+				    AlertManager.createAlert(this, "The Text to Speech Internet call failed. Most likely this is because the credits for this demo account from our Internet Text to Speech provider, VoiceRSS, have been used up." + "\n" + "Please go to http://www.voicerss.org/ and create an account for you (it's free as long as your usage is not high volume). Enter your API key in either the DIY Magic Mirror Advanced or Basic Config programs, add your API Key in the Voice RSS API Key Field, and then re-start this program.");
+				  	switch_mode();
+					ResetVideoFlags();
+			  }
+		}
+		
+		private function VoiceRSSsecurityErrorHandler(event:SecurityErrorEvent):void {
+
+            trace("securityErrorHandler: " + event);
+			trace("went to the tts mode io Security Error handler");
+        
+		}
+
+        private function VoiceRSShttpStatusHandler(event:HTTPStatusEvent):void {
+            trace("httpStatusHandler: " + event);
+			trace("went to the tts mode io http status handler");
+		}
+		
+		 private function VoiceRSSprogressHandler(event:ProgressEvent):void {
+            trace("VoiceRSS MP3 progressHandler loaded:" + event.bytesLoaded + " total: " + event.bytesTotal);
+			TTSTotalBytes = TTSTotalBytes + event.bytesTotal;
         }
 		
 		 private function ioErrorHandlerCustomAudio(event:IOErrorEvent):void {
