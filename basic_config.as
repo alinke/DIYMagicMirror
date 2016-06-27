@@ -3981,7 +3981,7 @@
   <weather_image_rotation>0</weather_image_rotation>
   <weather_image_scale>1</weather_image_scale>
   <doorcam_on>off</doorcam_on>
-  <doorcam_host>thepoolcam.dyndns.tv</doorcam_host>
+  <doorcam_host>plazacam.studentaffairs.duke.edu</doorcam_host>
   <doorcam_path>/axis-cgi/mjpg/video.cgi</doorcam_path>
   <doorcam_make>1</doorcam_make>
   <doorcam_port>80</doorcam_port>

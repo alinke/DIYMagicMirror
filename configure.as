@@ -956,8 +956,8 @@
              
             var viewmodeCommand:NativeMenuItem = fileMenu.addItem(new NativeMenuItem("Adjust Character Size and Positioning")); 
             viewmodeCommand.addEventListener(Event.SELECT, PositioningScreenButtonEvent); 
-            var PicasaCommand:NativeMenuItem = fileMenu.addItem(new NativeMenuItem("Picasa Slide Show Size and Positioning")); 
-            PicasaCommand.addEventListener(Event.SELECT, PositioningScreenPicasaButtonEvent);    
+           /* var PicasaCommand:NativeMenuItem = fileMenu.addItem(new NativeMenuItem("Picasa Slide Show Size and Positioning")); 
+            PicasaCommand.addEventListener(Event.SELECT, PositioningScreenPicasaButtonEvent);    */
 			var photoboothCommand:NativeMenuItem = fileMenu.addItem(new NativeMenuItem("Photobooth")); 
             photoboothCommand.addEventListener(Event.SELECT, photoboothButtonEvent); 
 			var breathalyzerCommand:NativeMenuItem = fileMenu.addItem(new NativeMenuItem("Breathalyzer Calibration and Settings")); 
@@ -3483,9 +3483,9 @@
 		
 				
 		addChild(version_text);
-		version_text.x = 920;
+		version_text.x = 880;
 		version_text.y = 5.35;
-		version_text.width = 75;
+		version_text.width = 100;
 		version_text.height = 19.85;
 		version_text.defaultTextFormat = VersionTextFormat;		
 		//version_text.text = myXML.branding + " Magic Mirror Configuration Version 5.0";
@@ -5643,8 +5643,8 @@
 			board_version_input.addItem( { label: "Version 1.0", data:1 } );
 			board_version_input.addItem( { label: "Version 2.0", data:2 } );	
 			board_version_input.addItem( { label: "Version 3.0", data:3 } );	
-			board_version_input.addItem( { label: "Version 4.0", data:4 } );	
-			board_version_input.addItem( { label: "Version 5.0", data:5 } );	
+			board_version_input.addItem( { label: "Magic Mirror Sensor Hub", data:4 } );	
+			board_version_input.addItem( { label: "Arduino Uno or Above", data:5 } );	
 			
 			house_code_input.addItem( { label: "A", data:1 } );
 			house_code_input.addItem( { label: "B", data:2 } );
@@ -9257,7 +9257,7 @@ var newconfigXML:XML =
   <weather_image_rotation>0</weather_image_rotation>
   <weather_image_scale>1</weather_image_scale>
   <doorcam_on>off</doorcam_on>
-  <doorcam_host>thepoolcam.dyndns.tv</doorcam_host>
+  <doorcam_host>plazacam.studentaffairs.duke.edu</doorcam_host>
   <doorcam_path>/axis-cgi/mjpg/video.cgi</doorcam_path>
   <doorcam_make>1</doorcam_make>
   <doorcam_port>80</doorcam_port>

@@ -1409,7 +1409,7 @@
 			
 			//sw_version = "Version " + myXML.version;
 			//this is the software version
-			sw_version = "Version 7.3";
+			sw_version = "Version 7.8";
 			
 			//use this code later when a new config XML needs to be created
 			
@@ -3291,7 +3291,7 @@
 		if (foundArduino != 1) {  //show the error box if the Arduno was not found
 				StartUpText.visible = false;
 				mirror_did_not_init_text.visible = true;
-				mirror_did_not_init_text.text = "The Magic Mirror did not initialize. Please check the following: 1. The Sensor Hub is plugged into your USB port 2. The Sensor Hub port number is set correctly in the configuration program 3. The serial proxy is running (serproxy on Windows & Mac, ser2net on Linux) 4. If you assembled your own Sensor Hub, ensure you did the one time upload of Firmata to the Arduino.";			
+				mirror_did_not_init_text.text = "The Magic Mirror did not initialize. Please check the following: 1. The Sensor Hub is plugged into your USB port 2. The Sensor Hub port number is set correctly in the configuration program 3. The serial proxy is running (serproxy on Windows and ser2net on Mac & Linux) 4. If you assembled your own Sensor Hub, ensure you did the one time upload of Firmata to the Arduino. 5. Restart and choose 'Run Magic Mirror with Board Reset'";			
 		}
 	}
 	

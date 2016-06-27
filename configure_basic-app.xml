@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<application xmlns="http://ns.adobe.com/air/application/20.0">
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<application xmlns="http://ns.adobe.com/air/application/3.2">
     <id>configure-basic</id>
-    <versionNumber>1.0</versionNumber>
+    <versionNumber>7.8</versionNumber>
     <filename>configure_basic</filename>
-    <description></description>
-    <!-- To localize the description, use the following format for the description element.
+    <description/>
+<!-- To localize the description, use the following format for the description element.
 	<description>
 		<text xml:lang="en">English App description goes here</text>
 		<text xml:lang="fr">French App description goes here</text>
@@ -12,14 +12,14 @@
 	</description>
 	-->
     <name>configure_basic</name>
-    <!-- To localize the name, use the following format for the name element.
+<!-- To localize the name, use the following format for the name element.
 	<name>
 		<text xml:lang="en">English App name goes here</text>
 		<text xml:lang="fr">French App name goes here</text>
 		<text xml:lang="ja">Japanese App name goes here</text>
 	</name>
 	-->
-    <copyright></copyright>
+    <copyright/>
     <initialWindow>
         <content>configure_basic.swf</content>
         <systemChrome>standard</systemChrome>
@@ -29,8 +29,18 @@
         <autoOrients>false</autoOrients>
         <aspectRatio>portrait</aspectRatio>
         <renderMode>auto</renderMode>
-    </initialWindow>
+    <maximizable>true</maximizable>
+    <minimizable>true</minimizable>
+    <resizable>true</resizable>
+  </initialWindow>
     <customUpdateUI>false</customUpdateUI>
     <allowBrowserInvocation>false</allowBrowserInvocation>
-    <icon></icon>
+    <icon>
+    <image16x16>icons/configure-16a.png</image16x16>
+    <image32x32>icons/configure-32.png</image32x32>
+    <image48x48>icons/configure-48.png</image48x48>
+    <image128x128>icons/configure-128.png</image128x128>
+  </icon>
+  <installFolder>DIY Magic Mirror</installFolder>
+  <programMenuFolder>DIY Magic Mirror</programMenuFolder>
 </application>
