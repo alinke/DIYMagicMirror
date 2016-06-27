@@ -126,6 +126,7 @@
     private var htmlLoader:HTMLLoader;
 	
 	private var radiotext:TextFormat = new TextFormat();
+	private var radiotext2:TextFormat = new TextFormat();
 	
 	private var switch5_radio_on:RadioButton = new RadioButton;
 	private var switch5_radio_off:RadioButton = new RadioButton;
@@ -189,6 +190,7 @@
 	private var tts_feature_label:TextField = new TextField();  //radio button
 	private var tts_url_label:TextField = new TextField();
 	private var tts_language_label:TextField = new TextField();  //drop down
+	//private var tts_engine_label:TextField = new TextField();
 	private var proximity1_tts_label:TextField = new TextField();
 	private var proximity2_tts_label:TextField = new TextField();
 	private var proximity3_tts_label:TextField = new TextField();
@@ -211,6 +213,12 @@
 	private var wait_tts_label:TextField = new TextField();
 	private var warning_tts_label:TextField = new TextField();
 	private var TTSTextLabelFormat:TextFormat = new TextFormat;
+	
+	private var tts_api_key:TextField = new TextField();
+	private var tts_api_key_label:TextField = new TextField();
+	
+	private var tts_api_keyYakitome:TextField = new TextField();
+	private var tts_api_key_labelYakitome:TextField = new TextField();
 	
 	private var only_my_tweets_checkbox:CheckBox = new CheckBox();
 	private var do_not_speak_twitter_search_term_checkbox:CheckBox = new CheckBox();
@@ -307,7 +315,10 @@
 	private var goBackMain:Button = new Button();
 	private var twitterAuthButton:Button = new Button();
 	
-  private var flashPlayerVersion:String = Capabilities.version;
+	private var tts_engine_voicerss:RadioButton = new RadioButton; 
+	private var tts_engine_yakitome:RadioButton = new RadioButton;
+	
+	  private var flashPlayerVersion:String = Capabilities.version;
 	  private var osArray:Array = flashPlayerVersion.split(' ');
 	  private var osType:String = osArray[0]; //The operating system: WIN, MAC, LNX
 	  private var versionArray:Array = osArray[1].split(',');//The player versions. 9,0,115,0
@@ -316,6 +327,7 @@
 	  private var minorVersion:Number = parseInt(versionArray[2]);
 	  
 	  private var fileMenu:NativeMenuItem; 
+	  private var TTS_rbg_engine:RadioButtonGroup = new RadioButtonGroup("TTS_rbg_engine");
 	
 	
 	public function basic_config():void {
@@ -411,6 +423,10 @@
 			radiotext.font = "Arial";
 			radiotext.size = 15;	
 			
+			radiotext2.color = 0xFFFFFF;
+			radiotext2.font = "Arial";
+			radiotext2.size = 12;	
+			
 			switch5_radio_on.group = switch5_rgb;
 			switch5_radio_off.group = switch5_rgb;
 			switch4_radio_on.group = switch4_rgb;
@@ -496,7 +512,7 @@
 			noArduinoFoundTimer.start();	
 			
 			
-			
+			TTS_rbg_engine.addEventListener(Event.CHANGE, TTSEngineChanged);
 				  
 	        
 	  } // ********end RunMirror initMediaPlayer function ***********
@@ -551,6 +567,7 @@
 			photobooth_PaperSize_dropdown.addItem( { label: "Photo Size 4 x 6", data:0 } );
 			photobooth_PaperSize_dropdown.addItem( { label: "Letter 8.5 x 11", data:1 } );
 			
+			/* old Google TTS languages
 			TTS_languages_dropdown.addItem( { label: "English", data:"en" } );
 			TTS_languages_dropdown.addItem( { label: "Spanish", data:"es" } );
 			TTS_languages_dropdown.addItem( { label: "German", data:"de" } );
@@ -580,7 +597,26 @@
 			TTS_languages_dropdown.addItem( { label: "Swahili", data:"sw" } );
 			TTS_languages_dropdown.addItem( { label: "Swedish", data:"sv" } );
 			TTS_languages_dropdown.addItem( { label: "Turkish", data:"tr" } );
-			TTS_languages_dropdown.addItem( { label: "Vietnamese", data:"vi" } );
+			TTS_languages_dropdown.addItem( { label: "Vietnamese", data:"vi" } );*/
+			
+			var ttsEngine:String = myXML.tts_engine;
+			
+			if (ttsEngine == "voicerss") {
+				populateVoiceRSSLanguageDropdown();  //put these into a function as we need to call from other places too so it will make maintenance easier if these ever change
+				trace("went to initial xml population for voicerss");
+		    }
+			
+			else if (ttsEngine == "yakitome") {
+				populateYakitomeLanguageDropdown();
+				trace("went to initial xml population for Y");
+			}
+			
+			else {
+				trace("oops, we couldn't find the default TTS engine to use, let's use voice RSS by default");
+				populateVoiceRSSLanguageDropdown();
+			}
+			
+			
 	}
 	
 	private function BuildUI():void {
@@ -631,10 +667,8 @@
 		do_not_speak_twitter_search_term_checkbox.height = 22;
 		do_not_speak_twitter_search_term_checkbox.label = "Don't Speak Search Term";
 		addChild(do_not_speak_twitter_search_term_checkbox);
-		//do_not_speak_twitter_search_term_checkbox.visible = true;
-		do_not_speak_twitter_search_term_checkbox.visible = false;
-		
-		
+		do_not_speak_twitter_search_term_checkbox.visible = true;
+		//do_not_speak_twitter_search_term_checkbox.visible = false;
 		
 		
 		tweetBreathalyzer_checkbox.x = 439.90;
@@ -643,15 +677,15 @@
 		tweetBreathalyzer_checkbox.height = 22;
 		tweetBreathalyzer_checkbox.label = "Tweet My Breathalyzer Results";
 		addChild(tweetBreathalyzer_checkbox);
-		//tweetBreathalyzer_checkbox.visible = true;
-		tweetBreathalyzer_checkbox.visible = false;
+		tweetBreathalyzer_checkbox.visible = true;
+		//tweetBreathalyzer_checkbox.visible = false;
 		
 		StandAloneCheck.x = 428.90;
 		StandAloneCheck.y = 303;
 		StandAloneCheck.width = 590.05;
 		StandAloneCheck.height = 22;
-		//StandAloneCheck.label = "Stand Alone Mode (For using Twitter feature without Magic Mirror hardware)";
-		StandAloneCheck.label = "Stand Alone Mode (For using without Sensor Hub/Arduino Hardware)";
+		StandAloneCheck.label = "Stand Alone Mode (For using Twitter feature without Magic Mirror hardware)";
+		//StandAloneCheck.label = "Stand Alone Mode (For using without Sensor Hub/Arduino Hardware)";
 		addChild(StandAloneCheck);
 		StandAloneCheck.visible = true;
 		
@@ -671,8 +705,8 @@
 		twitterAuthButton.height = 22;
 		twitterAuthButton.label = "Link Twitter Account";
 		addChild(twitterAuthButton);
-		//twitterAuthButton.visible = true;
-		twitterAuthButton.visible = false;
+		twitterAuthButton.visible = true;
+		//twitterAuthButton.visible = false;
 		
 		twitter_mode_radio_user.group = twitter_mode_rbg;
 		twitter_mode_radio_search.group = twitter_mode_rbg;
@@ -693,12 +727,15 @@
 		addChild (twitter_mode_radio_user);
 		addChild (twitter_mode_radio_search);
 		addChild (twitter_mode_radio_mentions);
-		twitter_mode_radio_user.visible = false;
-		twitter_mode_radio_search.visible = false;
-		twitter_mode_radio_mentions.visible = false;
+		twitter_mode_radio_user.visible = true;
+		twitter_mode_radio_search.visible = true;
+		twitter_mode_radio_mentions.visible = true;
 		
 		tts_feature_radio_on.group = TTS_rbg; 
 	    tts_feature_radio_off.group = TTS_rbg;
+		
+		tts_engine_voicerss.group = TTS_rbg_engine; 
+	    tts_engine_yakitome.group = TTS_rbg_engine;
 		
 		tts_feature_radio_on.x = 250; 
 	    tts_feature_radio_on.y = 234.65;
@@ -711,18 +748,30 @@
 		tts_feature_radio_off.textField.autoSize = TextFieldAutoSize.LEFT;
 		tts_feature_radio_off.label = "OFF";
 		
+		tts_engine_voicerss.x = 240; 
+	    tts_engine_voicerss.y = 35;
+		tts_engine_voicerss.setStyle("textFormat", radiotext2);
+		tts_engine_voicerss.textField.autoSize = TextFieldAutoSize.LEFT;
+		tts_engine_voicerss.label = "VoiceRSS";		
+		tts_engine_yakitome.x = 360; 
+	    tts_engine_yakitome.y = 35;
+		tts_engine_yakitome.setStyle("textFormat", radiotext2);
+		tts_engine_yakitome.textField.autoSize = TextFieldAutoSize.LEFT;
+		tts_engine_yakitome.label = "Yakitome (has delay)";
+		
 		addChild (tts_feature_radio_on);
 		addChild (tts_feature_radio_off);	
 		
-		tts_feature_radio_on.visible = false;
-		tts_feature_radio_off.visible = false;
+		tts_feature_radio_on.visible = true;
+		tts_feature_radio_off.visible = true;
 		
-
+		addChild (tts_engine_voicerss);
+		addChild (tts_engine_yakitome);		
+		
+		tts_engine_voicerss.visible = false;
+		tts_engine_yakitome.visible = false;
 		
 		setupComboBox();
-		
-		
-		
 		
 		TTS_Screen_Label.embedFonts = true;
 		TTS_Screen_Label.antiAliasType = AntiAliasType.ADVANCED;
@@ -739,10 +788,10 @@
 		tts_feature_label.antiAliasType = AntiAliasType.ADVANCED;
 		tts_feature_label.defaultTextFormat = TTSTextLabelFormat;
 		tts_feature_label.x = 10;
-		tts_feature_label.y = 40;
-		tts_feature_label.width = 200;
+		tts_feature_label.y = 35;
+		tts_feature_label.width = 180;
 		tts_feature_label.height = 18;
-		tts_feature_label.text = "Text to Speech (TTS)";			
+		tts_feature_label.text = "Text to Speech Engine";			
 		addChild(tts_feature_label);	
 		tts_feature_label.visible = false;
 		
@@ -783,6 +832,17 @@
 		addChild(tts_language_label);	
 		tts_language_label.visible = false;
 		
+		/*tts_engine_label.embedFonts = true;
+		tts_engine_label.antiAliasType = AntiAliasType.ADVANCED;
+		tts_engine_label.defaultTextFormat = TTSTextLabelFormat;
+		tts_engine_label.x = 10;
+		tts_engine_label.y = 120;
+		tts_engine_label.width = 100;
+		tts_engine_label.height = 18;
+		tts_engine_label.text = "TTS Engine";			
+		addChild(tts_engine_label);	
+		tts_engine_label.visible = false;*/
+		
 		TTS_languages_dropdown.dropdownWidth = 210; 
 		TTS_languages_dropdown.width = 200;  
 		TTS_languages_dropdown.x = 200;  
@@ -792,6 +852,59 @@
 		addChild(TTS_languages_dropdown); 
 		TTS_languages_dropdown.visible = false;
 		
+		tts_api_key_label.embedFonts = true;   //to do 
+		tts_api_key_label.antiAliasType = AntiAliasType.ADVANCED;
+		tts_api_key_label.defaultTextFormat = TTSTextLabelFormat;
+		tts_api_key_label.x = 10;
+		tts_api_key_label.y = 100;
+		tts_api_key_label.width = 200;
+		tts_api_key_label.height = 18;
+		tts_api_key_label.text = "Voice RSS API Key";			
+		addChild(tts_api_key_label);	
+		tts_api_key_label.visible = false;
+		
+		tts_api_key.embedFonts = true;
+		tts_api_key.selectable = true;	
+		tts_api_key.type = TextFieldType.INPUT;
+		tts_api_key.background = true;
+		tts_api_key.backgroundColor = 0xFFFFFF; //white
+		tts_api_key.maxChars = 100;		
+		tts_api_key.antiAliasType = AntiAliasType.ADVANCED;
+		tts_api_key.defaultTextFormat = TTSTextFormat;
+		tts_api_key.x = 200;
+		tts_api_key.y = 100;
+		tts_api_key.width = 250;
+		tts_api_key.height = 18;
+		tts_api_key.text = myXML.ttsrss_apikey;			
+		addChild(tts_api_key);	
+		tts_api_key.visible = false;
+		
+		tts_api_key_labelYakitome.embedFonts = true;   //to do 
+		tts_api_key_labelYakitome.antiAliasType = AntiAliasType.ADVANCED;
+		tts_api_key_labelYakitome.defaultTextFormat = TTSTextLabelFormat;
+		tts_api_key_labelYakitome.x = 480;
+		tts_api_key_labelYakitome.y = 100;
+		tts_api_key_labelYakitome.width = 170;
+		tts_api_key_labelYakitome.height = 18;
+		tts_api_key_labelYakitome.text = "Yakitome API Key";			
+		addChild(tts_api_key_labelYakitome);	
+		tts_api_key_labelYakitome.visible = false;
+		
+		tts_api_keyYakitome.embedFonts = true;
+		tts_api_keyYakitome.selectable = true;	
+		tts_api_keyYakitome.type = TextFieldType.INPUT;
+		tts_api_keyYakitome.background = true;
+		tts_api_keyYakitome.backgroundColor = 0xFFFFFF; //white
+		tts_api_keyYakitome.maxChars = 100;		
+		tts_api_keyYakitome.antiAliasType = AntiAliasType.ADVANCED;
+		tts_api_keyYakitome.defaultTextFormat = TTSTextFormat;
+		tts_api_keyYakitome.x = 620;
+		tts_api_keyYakitome.y = 100;
+		tts_api_keyYakitome.width = 240;
+		tts_api_keyYakitome.height = 18;
+		tts_api_keyYakitome.text = myXML.ttsyakitome_api_key;			
+		addChild(tts_api_keyYakitome);	
+		tts_api_keyYakitome.visible = false;
 		
 		
 		proximity1_tts_label.embedFonts = true;
@@ -2221,6 +2334,79 @@
 		}
 	}
 	
+	private function TTSEngineChanged(event:Event):void {    
+		
+		/*first we need to remove all the items
+		secondly add them back
+		third make the default selection based on the XML settings*/
+		
+		//step 1 - clear all values
+		TTS_languages_dropdown.removeAll();
+		
+		//step 2 and 3 - add all items based on which radio button is picked
+		if (tts_engine_voicerss.selected == true) {
+			
+			populateVoiceRSSLanguageDropdown();  //put these into a function as we need to call from other places too so it will make maintenance easier if these ever change
+			setVoiceRSSDropDownfromXML();
+			trace("Voice RSS radio button changed");
+		}
+		else {
+			populateYakitomeLanguageDropdown();
+			setYakitomeDropDownfromXML();
+			trace("Yakimote radio button changed");
+		}
+		
+	}	
+	
+	private function populateVoiceRSSLanguageDropdown():void {
+		
+		TTS_languages_dropdown.addItem( { label: "Catalan Female", data:"ca-es" } );
+		TTS_languages_dropdown.addItem( { label: "Chinese (China) Female", data:"zh-cn" } );
+		TTS_languages_dropdown.addItem( { label: "Chinese (Hong Kong) Female", data:"zh-hk" } );
+		TTS_languages_dropdown.addItem( { label: "Chinese (Taiwan) Female", data:"zh-tw" } );
+		TTS_languages_dropdown.addItem( { label: "Danish Female", data:"da-dk" } );
+		TTS_languages_dropdown.addItem( { label: "Dutch Female", data:"nl-nl" } );			
+		TTS_languages_dropdown.addItem( { label: "English (Australia) Female", data:"en-au" } );	
+		TTS_languages_dropdown.addItem( { label: "English (Canada) Female", data:"en-ca" } );
+		TTS_languages_dropdown.addItem( { label: "English (Great Britain) Female", data:"en-gb" } );
+		TTS_languages_dropdown.addItem( { label: "English (India) Female", data:"en-in" } );
+		TTS_languages_dropdown.addItem( { label: "English (United States) Female", data:"en-us" } );
+		TTS_languages_dropdown.addItem( { label: "Finnish Female", data:"fi-fi" } );
+		TTS_languages_dropdown.addItem( { label: "French (Canada) Female", data:"fr-ca" } );
+		TTS_languages_dropdown.addItem( { label: "French (France) Female", data:"fr-fr" } );
+		TTS_languages_dropdown.addItem( { label: "German Female", data:"de-de" } );
+		TTS_languages_dropdown.addItem( { label: "Italian Female", data:"it-it" } );
+		TTS_languages_dropdown.addItem( { label: "Japanese Female", data:"ja-jp" } );
+		TTS_languages_dropdown.addItem( { label: "Korean Female", data:"ko-kr" } );
+		TTS_languages_dropdown.addItem( { label: "Norwegian Female", data:"nb-no" } );
+		TTS_languages_dropdown.addItem( { label: "Polish Female", data:"pl-pl" } );
+		TTS_languages_dropdown.addItem( { label: "Portuguese (Brazil) Female", data:"pt-br" } );
+		TTS_languages_dropdown.addItem( { label: "Portuguese (Portugal) Female", data:"pt-pt" } );
+		TTS_languages_dropdown.addItem( { label: "Russian Female", data:"ru-ru" } );
+		TTS_languages_dropdown.addItem( { label: "Spanish (Mexico) Female", data:"es-mx" } );	
+		TTS_languages_dropdown.addItem( { label: "Spanish (Spain) Female", data:"es-es" } );
+		TTS_languages_dropdown.addItem( { label: "Swedish (Sweden) Female", data:"sv-se" } );
+	}
+	
+	private function populateYakitomeLanguageDropdown():void {
+		
+		TTS_languages_dropdown.addItem( { label: "German Female", data:"Klara" } );
+		TTS_languages_dropdown.addItem( { label: "German Male", data:"Reiner" } );
+		TTS_languages_dropdown.addItem( { label: "Spanish Male", data:"Alberto" } );
+		TTS_languages_dropdown.addItem( { label: "French Candadian Male", data:"Arnaud" } );
+		TTS_languages_dropdown.addItem( { label: "French Female", data:"Juliette" } );
+		TTS_languages_dropdown.addItem( { label: "French Male", data:"Alain" } );			
+		TTS_languages_dropdown.addItem( { label: "UK Female", data:"Anjali" } );	
+		TTS_languages_dropdown.addItem( { label: "UK Female 2", data:"Audrey" } );
+		TTS_languages_dropdown.addItem( { label: "US Female", data:"Crystal" } );
+		TTS_languages_dropdown.addItem( { label: "US Female 2", data:"Julia" } );
+		TTS_languages_dropdown.addItem( { label: "US Female 3", data:"Lauren" } );
+		TTS_languages_dropdown.addItem( { label: "US Female 4", data:"Randy" } );
+		TTS_languages_dropdown.addItem( { label: "US Male Default", data:"Dave" } );
+		TTS_languages_dropdown.addItem( { label: "US Male", data:"Mike" } );
+		
+	}
+	
 	private function photobooth_PrintCopies_sliderEvent(event:SliderEvent):void {
     	photobooth_PrintCopiesValue_label.text = String(event.value);
 	}
@@ -2248,104 +2434,94 @@
 	private function PopulateValues():void {
 		
 			
-			//*** now set the TTL language
-		var language_temp:String;
-		language_temp = myXML.tts_language;
-		switch (language_temp)  
-				{
-				case "en": 			
-					TTS_languages_dropdown.selectedIndex = 0;
-					break;
-				case "es":
-					TTS_languages_dropdown.selectedIndex = 1;
-					break;
-				case "de": 
-					TTS_languages_dropdown.selectedIndex = 2;
-					break;
-				case "fr": 
-					TTS_languages_dropdown.selectedIndex = 3;
-					break;	
-				case "it": 			
-					TTS_languages_dropdown.selectedIndex = 4;
-					break;
-				case "hi":
-					TTS_languages_dropdown.selectedIndex = 5;
-					break;
-				case "af": 
-					TTS_languages_dropdown.selectedIndex = 6;
-					break;
-				case "cs": 
-					TTS_languages_dropdown.selectedIndex = 7;
-					break;		
-				case "hr": 
-					TTS_languages_dropdown.selectedIndex = 8;
-					break;			
-				case "nl": 			
-					TTS_languages_dropdown.selectedIndex = 9;
-					break;
-				case "da":
-					TTS_languages_dropdown.selectedIndex = 10;
-					break;
-				case "fi": 
-					TTS_languages_dropdown.selectedIndex = 11;
-					break;
-				case "el": 
-					TTS_languages_dropdown.selectedIndex = 12;
-					break;	
-				case "ht": 			
-					TTS_languages_dropdown.selectedIndex = 13;
-					break;
-				case "hu":
-					TTS_languages_dropdown.selectedIndex = 14;
-					break;
-				case "id": 
-					TTS_languages_dropdown.selectedIndex = 15;
-					break;
-				case "is": 
-					TTS_languages_dropdown.selectedIndex = 16;
-					break;		
-				case "lv": 
-					TTS_languages_dropdown.selectedIndex = 17;
-					break;				
-				case "mk": 			
-					TTS_languages_dropdown.selectedIndex = 18;
-					break;
-				case "no":
-					TTS_languages_dropdown.selectedIndex = 19;
-					break;
-				case "pl": 
-					TTS_languages_dropdown.selectedIndex = 20;
-					break;
-				case "pt": 
-					TTS_languages_dropdown.selectedIndex = 21;
-					break;	
-				case "ro": 			
-					TTS_languages_dropdown.selectedIndex = 22;
-					break;
-				case "sr":
-					TTS_languages_dropdown.selectedIndex = 23;
-					break;
-				case "sk": 
-					TTS_languages_dropdown.selectedIndex = 24;
-					break;
-				case "ru": 
-					TTS_languages_dropdown.selectedIndex = 25;
-					break;		
-				case "sw": 
-					TTS_languages_dropdown.selectedIndex = 26;
-					break;			
-				case "sv": 			
-					TTS_languages_dropdown.selectedIndex = 27;
-					break;
-				case "tr":
-					TTS_languages_dropdown.selectedIndex = 28;
-					break;
-				case "vi": 
-					TTS_languages_dropdown.selectedIndex = 29;
-					break;
-				default:
-					TTS_languages_dropdown.selectedIndex = 0;
-				}		
+		//	//*** now set the TTL language
+		//var language_temp:String;
+		////language_temp = myXML.tts_language;
+		//language_temp = myXML.ttsrss_language
+		//
+		//	switch (language_temp)  
+		//		{
+		//		case "ca-es": 			
+		//			TTS_languages_dropdown.selectedIndex = 0;
+		//			break;
+		//		case "zh-cn":
+		//			TTS_languages_dropdown.selectedIndex = 1;
+		//			break;
+		//		case "zh-hk": 
+		//			TTS_languages_dropdown.selectedIndex = 2;
+		//			break;
+		//		case "zh-tw": 
+		//			TTS_languages_dropdown.selectedIndex = 3;
+		//			break;	
+		//		case "da-dk": 			
+		//			TTS_languages_dropdown.selectedIndex = 4;
+		//			break;
+		//		case "nl-nl":
+		//			TTS_languages_dropdown.selectedIndex = 5;
+		//			break;
+		//		case "en-au": 
+		//			TTS_languages_dropdown.selectedIndex = 6;
+		//			break;
+		//		case "en-ca": 
+		//			TTS_languages_dropdown.selectedIndex = 7;
+		//			break;		
+		//		case "en-gb": 
+		//			TTS_languages_dropdown.selectedIndex = 8;
+		//			break;			
+		//		case "en-in": 			
+		//			TTS_languages_dropdown.selectedIndex = 9;
+		//			break;
+		//		case "en-us":
+		//			TTS_languages_dropdown.selectedIndex = 10;
+		//			break;
+		//		case "fi-fi": 
+		//			TTS_languages_dropdown.selectedIndex = 11;
+		//			break;
+		//		case "fr-ca": 
+		//			TTS_languages_dropdown.selectedIndex = 12;
+		//			break;	
+		//		case "fr-fr": 			
+		//			TTS_languages_dropdown.selectedIndex = 13;
+		//			break;
+		//		case "de-de":
+		//			TTS_languages_dropdown.selectedIndex = 14;
+		//			break;
+		//		case "it-it": 
+		//			TTS_languages_dropdown.selectedIndex = 15;
+		//			break;
+		//		case "ja-jp": 
+		//			TTS_languages_dropdown.selectedIndex = 16;
+		//			break;		
+		//		case "ko-kr": 
+		//			TTS_languages_dropdown.selectedIndex = 17;
+		//			break;				
+		//		case "nb-no": 			
+		//			TTS_languages_dropdown.selectedIndex = 18;
+		//			break;
+		//		case "pl-pl":
+		//			TTS_languages_dropdown.selectedIndex = 19;
+		//			break;
+		//		case "pt-br": 
+		//			TTS_languages_dropdown.selectedIndex = 20;
+		//			break;
+		//		case "pt-pt": 
+		//			TTS_languages_dropdown.selectedIndex = 21;
+		//			break;	
+		//		case "ru-ru": 			
+		//			TTS_languages_dropdown.selectedIndex = 22;
+		//			break;
+		//		case "es-mx":
+		//			TTS_languages_dropdown.selectedIndex = 23;
+		//			break;
+		//		case "es-es": 
+		//			TTS_languages_dropdown.selectedIndex = 24;
+		//			break;
+		//		case "sv-se": 
+		//			TTS_languages_dropdown.selectedIndex = 25;
+		//			break;
+		//		default:
+		//			TTS_languages_dropdown.selectedIndex = 8;
+		//		}		
 		
 			
 			if (myXML.tts_feature == "on")  {
@@ -2354,6 +2530,25 @@
 				else {tts_feature_radio_off.selected = true;			
 			}
 			
+			
+			
+			if (myXML.tts_engine == "voicerss") {
+				setVoiceRSSDropDownfromXML();
+			}
+			else if (myXML.tts_engine == "yakitome") {
+				setYakitomeDropDownfromXML();
+			}
+			else {
+				setVoiceRSSDropDownfromXML();
+				tts_engine_voicerss.selected == true;
+				trace("we got no match for the TTS engine from the XML, so let's just set it to voicerss as the default");
+			}
+			
+			if (myXML.tts_engine == "voicerss")  { //this is the default
+				tts_engine_voicerss.selected = true;			
+			}
+				else {tts_engine_yakitome.selected = true;			
+			}
 			
 			
 			
@@ -2485,6 +2680,144 @@
 			
 	}
 	
+	private function setVoiceRSSDropDownfromXML():void {
+		var language:String = myXML.ttsrss_language;
+		switch (language)    //IMPORTANT evidently you can't switch on myXML.x so that's why we added the temp language string
+					{
+					case "ca-es": 			
+						TTS_languages_dropdown.selectedIndex = 0;
+						break;
+					case "zh-cn":
+						TTS_languages_dropdown.selectedIndex = 1;
+						break;
+					case "zh-hk": 
+						TTS_languages_dropdown.selectedIndex = 2;
+						break;
+					case "zh-tw": 
+						TTS_languages_dropdown.selectedIndex = 3;
+						break;	
+					case "da-dk": 			
+						TTS_languages_dropdown.selectedIndex = 4;
+						break;
+					case "nl-nl":
+						TTS_languages_dropdown.selectedIndex = 5;
+						break;
+					case "en-au": 
+						TTS_languages_dropdown.selectedIndex = 6;
+						break;
+					case "en-ca": 
+						TTS_languages_dropdown.selectedIndex = 7;
+						break;		
+					case "en-gb": 
+						TTS_languages_dropdown.selectedIndex = 8;
+						break;			
+					case "en-in": 			
+						TTS_languages_dropdown.selectedIndex = 9;
+						break;
+					case "en-us":
+						TTS_languages_dropdown.selectedIndex = 10;
+						break;
+					case "fi-fi": 
+						TTS_languages_dropdown.selectedIndex = 11;
+						break;
+					case "fr-ca": 
+						TTS_languages_dropdown.selectedIndex = 12;
+						break;	
+					case "fr-fr": 			
+						TTS_languages_dropdown.selectedIndex = 13;
+						break;
+					case "de-de":
+						TTS_languages_dropdown.selectedIndex = 14;
+						break;
+					case "it-it": 
+						TTS_languages_dropdown.selectedIndex = 15;
+						break;
+					case "ja-jp": 
+						TTS_languages_dropdown.selectedIndex = 16;
+						break;		
+					case "ko-kr": 
+						TTS_languages_dropdown.selectedIndex = 17;
+						break;				
+					case "nb-no": 			
+						TTS_languages_dropdown.selectedIndex = 18;
+						break;
+					case "pl-pl":
+						TTS_languages_dropdown.selectedIndex = 19;
+						break;
+					case "pt-br": 
+						TTS_languages_dropdown.selectedIndex = 20;
+						break;
+					case "pt-pt": 
+						TTS_languages_dropdown.selectedIndex = 21;
+						break;	
+					case "ru-ru": 			
+						TTS_languages_dropdown.selectedIndex = 22;
+						break;
+					case "es-mx":
+						TTS_languages_dropdown.selectedIndex = 23;
+						break;
+					case "es-es": 
+						TTS_languages_dropdown.selectedIndex = 24;
+						break;
+					case "sv-se": 
+						TTS_languages_dropdown.selectedIndex = 25;
+						break;
+					default:
+						TTS_languages_dropdown.selectedIndex = 8;
+					}	
+	}
+	
+	private function setYakitomeDropDownfromXML():void {
+		var language:String = myXML.ttsyakitome_voice;
+		switch (language)  
+					{
+					case "Klara": 			
+						TTS_languages_dropdown.selectedIndex = 0;
+						break;
+					case "Reiner":
+						TTS_languages_dropdown.selectedIndex = 1;
+						break;
+					case "Alberto": 
+						TTS_languages_dropdown.selectedIndex = 2;
+						break;
+					case "Arnaud": 
+						TTS_languages_dropdown.selectedIndex = 3;
+						break;	
+					case "Juliette": 			
+						TTS_languages_dropdown.selectedIndex = 4;
+						break;
+					case "Alain":
+						TTS_languages_dropdown.selectedIndex = 5;
+						break;
+					case "Anjali": 
+						TTS_languages_dropdown.selectedIndex = 6;
+						break;
+					case "Audrey": 
+						TTS_languages_dropdown.selectedIndex = 7;
+						break;		
+					case "Crystal": 
+						TTS_languages_dropdown.selectedIndex = 8;
+						break;			
+					case "Julia": 			
+						TTS_languages_dropdown.selectedIndex = 9;
+						break;
+					case "Lauren":
+						TTS_languages_dropdown.selectedIndex = 10;
+						break;
+					case "Randy": 
+						TTS_languages_dropdown.selectedIndex = 11;
+						break;
+					case "Dave": 
+						TTS_languages_dropdown.selectedIndex = 12;
+						break;	
+					case "Mike": 			
+						TTS_languages_dropdown.selectedIndex = 13;
+						break;
+					default:
+						TTS_languages_dropdown.selectedIndex = 12;
+					}	
+	}
+	
 	private function noSerproxyEvent(e:TimerEvent):void {  //this will trigger once after the startup delay timer
 		if (SerproxyRunning == 0) {  //show the error box if the Arduno was not found
 			removeChild(StartupText);
@@ -2600,12 +2933,42 @@
 	
 	private function saveValues():void {  		
 		
-		if ( TTS_languages_dropdown.selectedItem.data == null) {
+		/*if ( TTS_languages_dropdown.selectedItem.data == null) {
 			myXML.tts_language = "en";
 		}
 		
 		else {
 			myXML.tts_language = TTS_languages_dropdown.selectedItem.data;
+		}*/
+		
+		/*if ( TTS_languages_dropdown.selectedItem.data == null) {
+			myXML.ttsrss_language = "en-gb";
+		}
+		
+		else {
+			myXML.ttsrss_language = TTS_languages_dropdown.selectedItem.data;
+		}*/
+		
+		if (TTS_languages_dropdown.selectedItem.data == null) {
+			myXML.ttsrss_language = "en-gb";
+			myXML.ttsyakitome_voice = "Dave";
+		}
+		else {
+			
+			if (tts_engine_voicerss.selected == true ) {
+				myXML.ttsrss_language = TTS_languages_dropdown.selectedItem.data;
+			}
+			else {
+				myXML.ttsyakitome_voice = TTS_languages_dropdown.selectedItem.data;
+			}
+		}
+		
+		if (tts_engine_voicerss.selected == true) { //the voicerss tts engine is selected, not yakitome
+			myXML.tts_engine = "voicerss"; 
+		}
+		else {
+			myXML.tts_engine = "yakitome"; 
+		
 		}
 		
 		myXML.tts_url = tts_url.text;
@@ -2613,8 +2976,11 @@
 		
 		if (tts_feature_radio_on.selected == true) {
 			myXML.tts_feature = "on"; 
+			myXML.custom_audio = "off";
 		}
-		else {myXML.tts_feature = "off";
+		else {
+			myXML.tts_feature = "off";
+			myXML.custom_audio = "on";
 		}
 		
 		myXML.proximity1_tts = proximity1_tts.text;
@@ -2986,6 +3352,9 @@
 		myXML.photoboothShotDelay = photobooth_ShotDelay_slider.value;
 		myXML.photoboothGalleryTimer = photobooth_PhotoPreviewDuration_slider.value;
 		myXML.photoboothProofDisplayTime = photobooth_ProofPreviewDuration_slider.value;
+				
+		myXML.ttsrss_apikey = tts_api_key.text;
+		myXML.ttsyakitome_api_key = tts_api_keyYakitome.text;
 		
 		var str:String = stock_list.text;  		
 		temp_stock_array = str.split("+"); 
@@ -3093,9 +3462,9 @@
 	private function TTSButtonEvent(event:Event):void {	
 	
 		setChildIndex(black_square,numChildren-1);
-			   black_square.visible = true;
+		black_square.visible = true;
 			   
-			  
+			 
 		  setChildIndex(SaveButton,getChildIndex(black_square));
 		  setChildIndex(goBackMain,getChildIndex(black_square));				
 		  
@@ -3108,6 +3477,7 @@
 		  setChildIndex(tts_feature_label,getChildIndex(black_square));
 		  setChildIndex(tts_url_label,getChildIndex(black_square));
 		  setChildIndex(tts_language_label,getChildIndex(black_square));
+		  //setChildIndex(tts_engine_label,getChildIndex(black_square));
 		  setChildIndex(TTS_languages_dropdown,getChildIndex(black_square));
 		  setChildIndex(proximity1_tts,getChildIndex(black_square));
 		  setChildIndex(proximity1_tts_label,getChildIndex(black_square));
@@ -3147,11 +3517,20 @@
 		  setChildIndex(wait_tts,getChildIndex(black_square));
 		  setChildIndex(blow_tts_label,getChildIndex(black_square));
 		  setChildIndex(blow_tts,getChildIndex(black_square));				  
-		  //setChildIndex(tts_feature_radio_on,getChildIndex(black_square));
-		  //setChildIndex(tts_feature_radio_off,getChildIndex(black_square));		
+		  setChildIndex(tts_feature_radio_on,getChildIndex(black_square));
+		  setChildIndex(tts_feature_radio_off,getChildIndex(black_square));		
 		  setChildIndex(tts_url,getChildIndex(black_square));	
 		  setChildIndex(tts_instructions,getChildIndex(black_square));			  
-		  setChildIndex(output,getChildIndex(black_square)); //remove this	  
+		  setChildIndex(output,getChildIndex(black_square)); //remove this	
+		  
+		  setChildIndex(tts_api_key,getChildIndex(black_square));
+		  setChildIndex(tts_api_key_label,getChildIndex(black_square));
+		  
+		  setChildIndex(tts_api_keyYakitome,getChildIndex(black_square));
+		  setChildIndex(tts_api_key_labelYakitome,getChildIndex(black_square));
+		  
+		  setChildIndex(tts_engine_voicerss,getChildIndex(black_square));
+		  setChildIndex(tts_engine_yakitome,getChildIndex(black_square));
 		
 		  
 		  TTS_Screen_Label.visible = true;
@@ -3161,9 +3540,10 @@
 		  proximity2_tts_label.visible = true;
 		  proximity3_tts.visible = true;
 	      proximity3_tts_label.visible = true;
-		 // tts_feature_label.visible = true;
-		//  tts_url_label.visible = true;
+		  tts_feature_label.visible = true;
+		  tts_url_label.visible = false;
 		  tts_language_label.visible = true;
+		  //tts_engine_label.visible = true;
 		  TTS_languages_dropdown.visible = true;
 		  weather_good_tts.visible = true;
 		  weather_good_tts_label.visible = true;
@@ -3197,11 +3577,25 @@
 		  blow_tts_label.visible = true;
 		  wait_tts.visible = true;
 		  wait_tts_label.visible = true;
-		  //tts_feature_radio_on.visible = true;
-		  //tts_feature_radio_off.visible = true;
-		 // tts_url.visible = true;
+		  
+		  tts_feature_radio_on.visible = true;
+		  tts_feature_radio_off.visible = true;
+		  
+		  tts_engine_voicerss.visible = true;
+		  tts_engine_yakitome.visible = true;
+		  
+		  tts_url.visible = false;  
 		  tts_instructions.visible = true;
-		  output.visible = true;		 
+		  output.visible = true;
+		  
+		  tts_api_key.visible = true;
+		  tts_api_key_label.visible = true;
+		  
+		  tts_api_keyYakitome.visible = true;
+		  tts_api_key_labelYakitome.visible = true;
+		  
+			
+		  
 	}
 	
 	private function photoboothButtonEvent(event:Event):void {	
@@ -3347,6 +3741,7 @@
 		  tts_feature_label.visible = false;
 		  tts_url_label.visible = false;
 		  tts_language_label.visible = false;
+		 // tts_engine_label.visible = false;
 		  TTS_languages_dropdown.visible = false;
 		  weather_good_tts.visible = false;
 		  weather_good_tts_label.visible = false;
@@ -3384,6 +3779,15 @@
 		  blow_tts_label.visible = false;
 		  wait_tts.visible = false;
 		  wait_tts_label.visible = false;
+		  
+		  tts_engine_voicerss.visible = false;
+		  tts_engine_yakitome.visible = false;
+		  
+		  tts_api_key.visible = false;
+		  tts_api_key_label.visible = false;
+		  
+		  tts_api_keyYakitome.visible = false;
+		  tts_api_key_labelYakitome.visible = false;
 		  
 		 photobooth_Screen_Label.visible = false;
 		 photobooth_printing_check.visible=false;
@@ -3450,7 +3854,7 @@
   <display_mode_preset>0</display_mode_preset>
   <idle_videos>on</idle_videos>
   <video_resolution>high</video_resolution>
-  <version>7.5</version>
+  <version>7.8</version>
   <digital_switches>on</digital_switches>
   <switch1>off</switch1>
   <switch2>off</switch2>
@@ -3834,7 +4238,7 @@
   <photobooth_thanksSoundPathi>sounds/photobooth_thankssound_insult.mp3</photobooth_thanksSoundPathi>
   <photobooth_facialRecognitionTrigger>off</photobooth_facialRecognitionTrigger>
   <photobooth_facialRecognitionDelay>5</photobooth_facialRecognitionDelay>
-  <custom_audio>on</custom_audio>
+  <custom_audio>off</custom_audio>
   <custom_audio_clip>videos/idle_lipsync.flv</custom_audio_clip>
   <custom_audio_lip_pattern>lip_pattern.swf</custom_audio_lip_pattern>
   <lipsync_feature>on</lipsync_feature>
@@ -3886,7 +4290,7 @@
   <twitter_do_not_speak_search_term>off</twitter_do_not_speak_search_term>
   <twitter_breathalyzer>off</twitter_breathalyzer>
   <twitter_breathalyzer_value>on</twitter_breathalyzer_value>
-  <tts_feature>off</tts_feature>
+  <tts_feature>on</tts_feature>
   <tts_avatar>off</tts_avatar>
   <tts_charlimit>100</tts_charlimit>
   <tts_url>http://translate.google.co.uk/translate_tts?q=</tts_url>
@@ -3894,6 +4298,21 @@
   <tts_sendheader>on</tts_sendheader>
   <tts_headername>Referer</tts_headername>
   <tts_headervalue>http://translate.google.co.uk/</tts_headervalue>
+  
+  
+  <ttsrss_url>http://api.voicerss.org/</ttsrss_url>
+  <ttsrss_apikey>ff013119f75b411e81f1bdcde7ea8c38</ttsrss_apikey>
+  <ttsrss_language>en-gb</ttsrss_language>
+  <ttsrss_mp3samplerate>44khz_16bit_stereo</ttsrss_mp3samplerate> 
+  
+  <tts_engine>voicerss</tts_engine>
+  <ttsyakitome_resturl>https://www.yakitome.com/api/rest/tts</ttsyakitome_resturl>
+  <ttsyakitome_audiourl>https://www.yakitome.com/api/rest/audio</ttsyakitome_audiourl>
+  <ttsyakitome_api_key>qha4ndDY1amd3_BCGuD65HO</ttsyakitome_api_key>
+  <ttsyakitome_voice>Dave</ttsyakitome_voice>
+  <ttsyakitome_speed>5</ttsyakitome_speed>
+  
+  
   <proximity1_tts>Hi Jane, can you come closer pretty please</proximity1_tts>
   <proximity2_tts>You look great, have you lost some weight?</proximity2_tts>
   <proximity3_tts>Say you really look great today, is that a new shirt you're wearing?</proximity3_tts>
@@ -4033,7 +4452,7 @@
 	
 	private function CheckConfigVersion():void {
 		//let's check and make sure the user doesn't have an old version of the config file
-			if (Number(myXML.version) < 7.5) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
+			if (Number(myXML.version) < 7.8) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
 				//AlertManager.createAlert(this, "Your configuration file was an older version and has been updated, your current settings have been maintained");
 				//before blowing the file away, let's read it into another XML so we have a record of the old settings
 				filestream.open(file, FileMode.READ);
@@ -4416,6 +4835,19 @@
 			if (myXMLold.tts_sendheader != undefined) { myXML.tts_sendheader = myXMLold.tts_sendheader; }
 			if (myXMLold.tts_headername != undefined) { myXML.tts_headername = myXMLold.tts_headername; }			
 			if (myXMLold.tts_headervalue != undefined) { myXML.tts_headervalue = myXMLold.tts_headervalue; }
+			if (myXMLold.ttsrss_url != undefined) { myXML.ttsrss_url = myXMLold.ttsrss_url; }
+			if (myXMLold.ttsrss_apikey != undefined) { myXML.ttsrss_apikey = myXMLold.ttsrss_apikey; }
+			if (myXMLold.ttsrss_language != undefined) { myXML.ttsrss_language = myXMLold.ttsrss_language; }			
+			if (myXMLold.ttsrss_mp3samplerate != undefined) { myXML.ttsrss_mp3samplerate = myXMLold.ttsrss_mp3samplerate; }
+			
+			if (myXMLold.tts_engine != undefined) { myXML.tts_engine = myXMLold.tts_engine; }
+			if (myXMLold.ttsyakitome_resturl != undefined) { myXML.ttsyakitome_resturl = myXMLold.ttsyakitome_resturl; }
+			if (myXMLold.ttsyakitome_audiourl != undefined) { myXML.ttsyakitome_audiourl = myXMLold.ttsyakitome_audiourl; }			
+			if (myXMLold.ttsyakitome_api_key != undefined) { myXML.ttsyakitome_api_key = myXMLold.ttsyakitome_api_key; }
+			if (myXMLold.ttsyakitome_voice != undefined) { myXML.ttsyakitome_voice = myXMLold.ttsyakitome_voice; }
+			if (myXMLold.ttsyakitome_speed != undefined) { myXML.ttsyakitome_speed = myXMLold.ttsyakitome_speed; }
+			
+			
 			if (myXMLold.proximity1_tts != undefined) { myXML.proximity1_tts = myXMLold.proximity1_tts; }			
 			if (myXMLold.proximity2_tts != undefined) { myXML.proximity2_tts = myXMLold.proximity2_tts; }
 			if (myXMLold.proximity3_tts != undefined) { myXML.proximity3_tts = myXMLold.proximity3_tts; }			
