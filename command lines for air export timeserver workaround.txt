@@ -1,0 +1,6 @@
+
+path to adt C:\Program Files\Adobe\Adobe Flash CS6\AIR3.2\bin
+
+adt.bat -sign -storetype pkcs12 -keystore "magicmirrorcert.p12"  -tsa "http://sha256timestamp.ws.symantec.com/sha256/timestamp" "configure.airi"   "configure.air"
+adt.bat -sign -storetype pkcs12 -keystore "magicmirrorcert.p12"  -tsa "http://sha256timestamp.ws.symantec.com/sha256/timestamp" "configure_basic.airi"   "configure_basic.air"
+adt.bat -sign -storetype pkcs12 -keystore "magicmirrorcert.p12"  -tsa "http://sha256timestamp.ws.symantec.com/sha256/timestamp" "mirror.airi"   "mirror.air"

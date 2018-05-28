@@ -11035,9 +11035,11 @@ var newconfigXML:XML =
 		LEDmode_radio_off.selected = true;
 		myXML.LED_mode = "indicator";
 		
-		screenMode_radio_p90.selected = true;
+		//screenMode_radio_p90.selected = true;
+		screenMode_radio_l0.selected = true;
 		myXML.full_screen = "no";	
-		myXML.screen_mode = "portrait90";	
+		myXML.screen_mode = "landscape0";  //in 7.8, this was portrait90, changed to this
+		//myXML.screen_mode = "portrait90";	
 		
 		verbose_radio_off.selected = true;
 		myXML.verbose = "yes"; 

@@ -1370,7 +1370,7 @@
 			//trace (myXML);
 			filestream.close();									
 			
-			if (Number(myXML.version) < 7.8) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
+			if (Number(myXML.version) < 7.9) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
 				AlertManager.createAlert(this, "Your configuration file is an older version, please exit this program now and run the Configuration program which will update your configuration file while maintaining your existing configuration settings.");
 			}
 			
@@ -1409,7 +1409,7 @@
 			
 			//sw_version = "Version " + myXML.version;
 			//this is the software version
-			sw_version = "Version 7.8";
+			sw_version = "Version 7.9";
 			
 			//use this code later when a new config XML needs to be created
 			
