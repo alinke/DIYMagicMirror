@@ -124,6 +124,9 @@
 	import models.SearchModel;
 	import com.adobe.serialization.json.JSON;
 	import com.adobe.serialization.json.JSONParseError;
+	import com.adobe.serialization.json.JSONDecoder;
+	
+	
 	
 	//Library we use for Twitter
 	import isle.susisu.twitter.Twitter;
@@ -1370,7 +1373,7 @@
 			//trace (myXML);
 			filestream.close();									
 			
-			if (Number(myXML.version) < 7.9) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
+			if (Number(myXML.version) < 7.10) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
 				AlertManager.createAlert(this, "Your configuration file is an older version, please exit this program now and run the Configuration program which will update your configuration file while maintaining your existing configuration settings.");
 			}
 			
@@ -1409,7 +1412,7 @@
 			
 			//sw_version = "Version " + myXML.version;
 			//this is the software version
-			sw_version = "Version 7.9";
+			sw_version = "Version 7.10";
 			
 			//use this code later when a new config XML needs to be created
 			
@@ -2146,12 +2149,14 @@
 						i++;
 					}
 			num_stocks = stockArray.length;
-			stock_string = stockArray.join("+");
+			//stock_string = stockArray.join("+");  //changed to , for the new stock API from https://iextrading.com/
+			stock_string = stockArray.join(",");
 			trace (stock_string);						
 			////*****************************************************************
 			stockLoader = new URLLoader();
 			//stockLoader.load(new URLRequest("http://download.finance.yahoo.com/d/quotes.csv?s=" + stock_string + "&f=c1&e=.csv"));
-			stockLoader.addEventListener(Event.COMPLETE, stockLoaded);	  
+			//stockLoader.addEventListener(Event.COMPLETE, stockLoaded);	
+			stockLoader.addEventListener(Event.COMPLETE, stockLoadediextrading);	
 			WeatherLoader = new URLLoader();
 		    //WeatherLoader.load(new URLRequest("http://weather.yahooapis.com/forecastrss?p=" + weather_zip + "&u=" + weather_reading));
 			WeatherLoader.addEventListener(Event.COMPLETE, WeatherXMLLoaded);								
@@ -6064,10 +6069,34 @@
 						_detectionTimer.stop();
 			}	
 			
-			stockLoader.load(new URLRequest("http://download.finance.yahoo.com/d/quotes.csv?s=" + stock_string + "&f=c1&e=.csv"));		
+			//stockLoader.load(new URLRequest("http://download.finance.yahoo.com/d/quotes.csv?s=" + stock_string + "&f=c1&e=.csv"));  //this api has been discontinued by Yahoo , boo!
+			
+			stockLoader.load(new URLRequest("https://api.iextrading.com/1.0/stock/market/batch?symbols=" + stock_string + "&types=quote")); //this api is from https://iextrading.com/
+		
 	}
 	
-	private function stockLoaded(evt:Event):void //triggered when file was loaded
+	private function stockLoadediextrading(evt:Event):void {
+		 	
+			stockPriceChange = 0; //reset this back to 0 as it will be called multiple times
+			//trace (stockLoader.data);
+			//var sstring = stockLoader.data;			
+			
+			var stockPrices:Object = JSON.parse(stockLoader.data);
+			//trace(stockPrices.SBUX.quote.change);
+
+			for(var key:String in stockPrices) { 
+				trace("Name: " + key + " - Change: " + stockPrices[key].quote.change); 
+				stockPriceChange = stockPriceChange + Number(stockPrices[key].quote.change);
+	  		}
+			
+			stockPriceChange = NumberUtilities.round(stockPriceChange,.01)
+			trace ("Stock Price Change Is: " + stockPriceChange);
+			Stock.text = ("Stock Portfolio Price Change Is: " + stockPriceChange);
+			stock(); //call the main function to play the videos
+			
+	}
+	
+	/*private function stockLoaded(evt:Event):void //triggered when file was loaded , OLD function from the Yahoo Stock API, now replaced with above
 		{
 			stockPriceChange = 0; //reset this back to 0 as it will be called multiple times
 			var sstring = stockLoader.data;			
@@ -6086,7 +6115,7 @@
 			Stock.text = ("Stock Portfolio Price Change Is: " + stockPriceChange);
 			stock(); //call the main function to play the videos
 			
-	} // end stockLoaded function
+	} // end stockLoaded function*/
 			
 	private function stock():void {
 		

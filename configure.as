@@ -1146,7 +1146,7 @@
 		//now let's check and make sure the config file corresponds to the version this code is expecting and if not, let's create a new one
 		//use this later when a new config XML needs to be created on the fly
 		
-		if (Number(myXML.version) < 7.9) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
+		if (Number(myXML.version) < 7.10) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
 			AlertManager.createAlert(this, "Your configuration file was an older version and has been updated, your current settings have been maintained");
 			//before blowing the file away, let's read it into another XML so we have a record of the old settings
 			filestream.open(file, FileMode.READ);
@@ -3489,7 +3489,7 @@
 		version_text.height = 19.85;
 		version_text.defaultTextFormat = VersionTextFormat;		
 		//version_text.text = myXML.branding + " Magic Mirror Configuration Version 5.0";
-		version_text.text = "Version 7.9";
+		version_text.text = "Version 7.10";
 		//version_text.text = "DIY Magic Mirror Configuration Version " + myXML.version;
 		
 		//square.graphics.lineStyle(1,0x000000);
@@ -9130,13 +9130,13 @@ var newconfigXML:XML =
   <display_mode_preset>0</display_mode_preset>
   <idle_videos>on</idle_videos>
   <video_resolution>high</video_resolution>
-  <version>7.9</version>
+  <version>7.10</version>
   <digital_switches>on</digital_switches>
   <switch1>off</switch1>
   <switch2>off</switch2>
   <switch3>off</switch3>
-  <switch4>on</switch4>
-  <switch5>on</switch5>
+  <switch4>off</switch4>
+  <switch5>off</switch5>
   <switch6>off</switch6>
   <debounce>on</debounce>
   <debounce1>20</debounce1>

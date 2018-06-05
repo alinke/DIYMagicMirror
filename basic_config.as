@@ -3854,13 +3854,13 @@
   <display_mode_preset>0</display_mode_preset>
   <idle_videos>on</idle_videos>
   <video_resolution>high</video_resolution>
-  <version>7.9</version>
+  <version>7.10</version>
   <digital_switches>on</digital_switches>
   <switch1>off</switch1>
   <switch2>off</switch2>
   <switch3>off</switch3>
-  <switch4>on</switch4>
-  <switch5>on</switch5>
+  <switch4>off</switch4>
+  <switch5>off</switch5>
   <switch6>off</switch6>
   <debounce>on</debounce>
   <debounce1>20</debounce1>
@@ -4452,7 +4452,7 @@
 	
 	private function CheckConfigVersion():void {
 		//let's check and make sure the user doesn't have an old version of the config file
-			if (Number(myXML.version) < 7.9) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
+			if (Number(myXML.version) < 7.10) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
 				//AlertManager.createAlert(this, "Your configuration file was an older version and has been updated, your current settings have been maintained");
 				//before blowing the file away, let's read it into another XML so we have a record of the old settings
 				filestream.open(file, FileMode.READ);

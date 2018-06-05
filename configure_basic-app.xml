@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <application xmlns="http://ns.adobe.com/air/application/3.2">
     <id>configure-basic</id>
-    <versionNumber>7.9</versionNumber>
+    <versionNumber>7.10</versionNumber>
     <filename>configure_basic</filename>
     <description/>
-<!-- To localize the description, use the following format for the description element.
+  <!-- To localize the description, use the following format for the description element.
 	<description>
 		<text xml:lang="en">English App description goes here</text>
 		<text xml:lang="fr">French App description goes here</text>
@@ -12,7 +12,7 @@
 	</description>
 	-->
     <name>configure_basic</name>
-<!-- To localize the name, use the following format for the name element.
+  <!-- To localize the name, use the following format for the name element.
 	<name>
 		<text xml:lang="en">English App name goes here</text>
 		<text xml:lang="fr">French App name goes here</text>
