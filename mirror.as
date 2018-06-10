@@ -83,6 +83,7 @@
 	import flash.display.BitmapData;	
 	import flash.display.Bitmap;
 	import flash.display.Sprite;
+	import flash.globalization.DateTimeFormatter;
 				
 	import gs.easing.Cubic;	
 	import gs.TweenLite;	
@@ -135,10 +136,6 @@
 	import isle.susisu.twitter.events.TwitterErrorEvent;
 	import isle.susisu.twitter.events.TwitterRequestEvent;
 	import isle.susisu.twitter.utils.objectToQueryString;
-	
-	
-	
-	
 				
 	public class mirror extends MovieClip {
 	  
@@ -191,6 +188,8 @@
 	  private var WeatherLoader:URLLoader;
 	  private var PicasaLoader:URLLoader;
 	  private var stockLoader:URLLoader;
+	  private var bitcoinLoaderYesterday:URLLoader;
+	  private var bitcoinLoaderCurrent:URLLoader;
 	  private var num_stocks:int;
 	  private var stockPriceChange:Number = 0;
 	  private var mirror_mode:String;
@@ -479,9 +478,15 @@
   	  private var weather_ok_tts:String;
   	  private var weather_rain_tts:String;
   	  private var no_internet_tts:String;
+	  
 	  private var stock_up_tts:String;
 	  private var stock_no_change_tts:String;
 	  private var stock_down_tts:String;
+	  
+	  private var bitcoin_up_tts:String;
+	  private var bitcoin_no_change_tts:String;
+	  private var bitcoin_down_tts:String;
+	  
 	  private var doorbell_tts:String;
 	  private var x10_on_tts:String;
 	  private var x10_off_tts:String;
@@ -1256,6 +1261,29 @@
 	private var TTSengine:String = "voicerss";
 	private var _functionToCall:String;
 	
+	private var bitcoin_mode:String;
+	private var bitcoin_amount:Number;
+	
+	private var bitcoinPriceYesterday:Number;
+	private var bitcoinPriceCurrent:Number;
+	
+	private var bitcoinPriceChange:Number;
+	private var bitcoin_good_threshold:Number;
+	private var bitcoin_bad_threshold:Number;
+	
+	private var DIYMagicMirrorRoot:File = new File(); 
+	private var serproxyCFG:File = new File();
+	private var Windows64Bit:Boolean;
+	private var file2:File = new File(); 
+	private var file3:File = new File(); 
+	 private var flashPlayerVersion:String = Capabilities.version;
+	  private var osArray:Array = flashPlayerVersion.split(' ');
+	  private var osType:String = osArray[0]; //The operating system: WIN, MAC, LNX
+	  private var versionArray:Array = osArray[1].split(',');//The player versions. 9,0,115,0
+	  private var majorVersion:Number = parseInt(versionArray[0]);
+	  private var majorRevision:Number = parseInt(versionArray[1]);
+	  private var minorVersion:Number = parseInt(versionArray[2]);
+	  private var minorRevision:Number = parseInt(versionArray[3]);	
 	//*****************************************************
 	
 	
@@ -1311,7 +1339,38 @@
 						//output.text = "Unable to detect OS";
 						//trace ("Unable to detect OS");					
 				//}  //end switch
+				
+				switch (osType) {
+					
+					case "WIN":		
+						
+						file3 = file3 = File.desktopDirectory;	
+						file3 = file3.resolvePath("../../../Program Files/DIY Magic Mirror/mirror/mirror.exe");							
+						
+						file2 = File.desktopDirectory;	
+						file2 = file2.resolvePath("../../../Program Files/DIY Magic Mirror/mirror/");		
+						
+						if (file3.exists == false) {  //if still false, then must be 64-bit
+							file2 = File.desktopDirectory;						
+							file2 = file2.resolvePath("../../../Program Files (x86)/DIY Magic Mirror/mirror/");			
+							Windows64Bit = true;
+							DIYMagicMirrorRoot = File.desktopDirectory;		
+							DIYMagicMirrorRoot = DIYMagicMirrorRoot.resolvePath("../../../Program Files (x86)/DIY Magic Mirror/");	
+							trace ("we have 64 bit Windows");
+						}
+						else {
+							Windows64Bit = false;
+							DIYMagicMirrorRoot = File.desktopDirectory;		
+							DIYMagicMirrorRoot = DIYMagicMirrorRoot.resolvePath("../../../Program Files/DIY Magic Mirror/");	
+							trace ("we don't have 64 bit Windows");
+						}
+						
+						break;						
+					
+				}  //end switch
 										
+			
+			
 			character_change_sound_princess = new Sound(new URLRequest("sounds/character_change_princess.mp3"));
 			character_change_sound_pirate = new Sound(new URLRequest("sounds/character_change_pirate.mp3"));
 			character_change_sound_halloween = new Sound(new URLRequest("sounds/character_change_halloween.mp3"));
@@ -1357,10 +1416,6 @@
 		
 		//public function RunMirror(event:Event):void { //triggered after config file loaded
 		public function RunMirror():void { //triggered after config file loaded
-			
-			
-
-		   
 
 			//nativeWindow.x = (Capabilities.screenResolutionX - nativeWindow.width) ;
           //  nativeWindow.y = (Capabilities.screenResolutionY - nativeWindow.height) ;
@@ -1373,7 +1428,7 @@
 			//trace (myXML);
 			filestream.close();									
 			
-			if (Number(myXML.version) < 7.10) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
+			if (Number(myXML.version) < 7.11) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
 				AlertManager.createAlert(this, "Your configuration file is an older version, please exit this program now and run the Configuration program which will update your configuration file while maintaining your existing configuration settings.");
 			}
 			
@@ -1412,7 +1467,7 @@
 			
 			//sw_version = "Version " + myXML.version;
 			//this is the software version
-			sw_version = "Version 7.10";
+			sw_version = "Version 7.11";
 			
 			//use this code later when a new config XML needs to be created
 			
@@ -1420,6 +1475,7 @@
 				AlertManager.createAlert(this, "Your configuration file is an older version, please exit this program now and run the Configuration program to update it and then re-start this program.");
 			}
 			
+			photoboothInitSounds(); //init the paths for the photobooth sounds
 					
 			idle_videos = myXML.idle_videos;
 			video_resolution = myXML.video_resolution;
@@ -1479,10 +1535,8 @@
 			analog_input2_pin = Number(myXML.analog_input2_pin); //analog touch sensor 2 stock
 			analog_input3_pin = Number(myXML.analog_input3_pin); //analog touch sensor 3 video 1
 			
-			
 			hardware_mode_select_pin = Number(myXML.hardware_mode_select_pin); // hardware mode select pot		
 			alcohol_sensor_pin = Number(myXML.alcohol_sensor_pin); // alcohol sensor pin	
-			
 			
 			//***********************************************************
 						
@@ -1499,6 +1553,10 @@
 				
 			stock_good_threshold = Number(myXML.stock_good_threshold);
 			stock_bad_threshold = Number(myXML.stock_bad_threshold);
+			
+			bitcoin_good_threshold = Number(myXML.bitcoin_good_threshold);
+			bitcoin_bad_threshold = Number(myXML.bitcoin_bad_threshold);
+			
 			weather_display = myXML.weather_display;
 			forecast_cutoff = myXML.forecast_cutoff;
 			x10_commands = myXML.x10_commands;
@@ -1674,9 +1732,15 @@
 		  weather_ok_tts = myXML.weather_ok_tts;
 		  weather_rain_tts = myXML.weather_rain_tts;
 		  no_internet_tts = myXML.no_internet_tts;
+		  
 		  stock_up_tts = myXML.stock_up_tts;
 		  stock_no_change_tts = myXML.stock_no_change_tts;
 		  stock_down_tts = myXML.stock_down_tts;
+		  
+		  bitcoin_up_tts = myXML.bitcoin_up_tts;
+		  bitcoin_no_change_tts = myXML.bitcoin_no_change_tts;
+		  bitcoin_down_tts = myXML.bitcoin_down_tts;
+		  
 		  doorbell_tts = myXML.doorbell_tts;
 		  x10_on_tts = myXML.x10_on_tts;
 		  x10_off_tts = myXML.x10_off_tts;
@@ -1689,7 +1753,7 @@
 		  wait_tts = myXML.wait_tts;
 		  warning_tts = myXML.warning_tts;
 		  
-			if (doorcam_on == "on") {
+		  if (doorcam_on == "on") {
 					//var test:MJPEG = new MJPEG("thepoolcam.dyndns.tv", "/axis-cgi/mjpg/video.cgi", 80);			
 					//doorcam = new MJPEG(ipcamera_url.text, ipcamera_path.text, int(ipcamera_port.text),ipcamera_username.text,ipcamera_password.text ); 
 					doorcam = new MJPEG(doorcam_host, doorcam_path, doorcam_port,doorcam_username,doorcam_password); //connect to serial proxy server
@@ -2154,9 +2218,13 @@
 			trace (stock_string);						
 			////*****************************************************************
 			stockLoader = new URLLoader();
-			//stockLoader.load(new URLRequest("http://download.finance.yahoo.com/d/quotes.csv?s=" + stock_string + "&f=c1&e=.csv"));
+			bitcoinLoaderYesterday = new URLLoader();
+			bitcoinLoaderCurrent = new URLLoader();
+			//stockLoader.load(new URLRequest("http://download.finance.yahoo.com/d/quotes.csv?s=" + stock_string + "&f=c1&e=.csv")); //old, this broke, damn Yahoo
 			//stockLoader.addEventListener(Event.COMPLETE, stockLoaded);	
 			stockLoader.addEventListener(Event.COMPLETE, stockLoadediextrading);	
+			bitcoinLoaderYesterday.addEventListener(Event.COMPLETE, bitcoinLoadedYesterday);
+			bitcoinLoaderCurrent.addEventListener(Event.COMPLETE, bitcoinLoadedCurrent);
 			WeatherLoader = new URLLoader();
 		    //WeatherLoader.load(new URLRequest("http://weather.yahooapis.com/forecastrss?p=" + weather_zip + "&u=" + weather_reading));
 			WeatherLoader.addEventListener(Event.COMPLETE, WeatherXMLLoaded);								
@@ -2178,6 +2246,9 @@
 			stockLoader.addEventListener(IOErrorEvent.IO_ERROR, stockLoaderioErrorHandler);			
 			WeatherLoader.addEventListener(IOErrorEvent.IO_ERROR, WeatherLoaderioErrorHandler);
 			pictLdr.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, pictLdrioErrorHandler);			
+			bitcoinLoaderYesterday.addEventListener(IOErrorEvent.IO_ERROR, stockLoaderioErrorHandler);	
+			bitcoinLoaderCurrent.addEventListener(IOErrorEvent.IO_ERROR, stockLoaderioErrorHandler);
+			
 			//*************************************************************
 		
 		
@@ -2323,10 +2394,6 @@
 		myVid.addEventListener(Event.COMPLETE, onClipDone);  // call the idle loop when a clip has finished playing
 		//myVid.addEventListener(VideoEvent.SEEKED, onSeekedEvent); // Listen for seeked event
 		myVid.addEventListener(fl.video.VideoEvent.SEEKED, onSeekedEvent);
-		 
-		 
-		 
-		 
 
 		x10_label.text = String("x10 Command");
 		ArduinoFound.text = String("Arduino Not Found! Check to see if serial proxy is running.");
@@ -2349,7 +2416,7 @@
 				weather_rain_clipp =  myXML.princess[6];
 				no_internet_clipp =  myXML.princess[7];
 				stock_up_clipp = 	 myXML.princess[8];
-				stock_no_change_clipp=  myXML.princess[9];
+				stock_no_change_clipp =  myXML.princess[9];
 				stock_down_clipp =    myXML.princess[10];
 				doorbell_clipp =      myXML.princess[11];
 				phone_clipp = 		 myXML.princess[12];
@@ -2646,6 +2713,10 @@
 		drink4_mp3 =  			myXML.mp3[16];	
 		blow_mp3 =  			myXML.mp3[17];	
 		wait_mp3 =  			myXML.mp3[18];	
+		
+		
+		bitcoin_mode = 			myXML.bitcoin_mode;
+	    bitcoin_amount =		myXML.bitcoin_amount;
 		///*************************************
 	
 		
@@ -2706,6 +2777,26 @@
 					trace("Unable to load requested document.");
 				}
 	  //**************************************************************
+	  
+	   switch (osType) {
+					
+			case "WIN":			
+				
+				if (Windows64Bit == true) {
+					serproxyCFG   = File.desktopDirectory;	
+					serproxyCFG   = serproxyCFG.resolvePath("../../../Program Files (x86)/DIY Magic Mirror/serproxy.cfg");	
+				}
+				else {
+					serproxyCFG   = File.desktopDirectory;	
+					serproxyCFG   = serproxyCFG.resolvePath("../../../Program Files/DIY Magic Mirror/serproxy.cfg");	
+				}
+				var serproxyTextLoader:URLLoader = new URLLoader();
+				serproxyTextLoader.addEventListener(Event.COMPLETE, serproxyTextonLoaded);
+				serproxyTextLoader.load(new URLRequest(serproxyCFG.nativePath));
+				
+				break;						
+								
+		}  //end switch
 	  
 	  if (stand_alone != "on") {	  
 	  		Alcohol_LEDTimer.addEventListener(TimerEvent.TIMER,  Alcohol_LEDTimerEvent);  //if on in config program, LEDs will show the alcohol sensor value state
@@ -2969,6 +3060,8 @@
 						
 						
 						
+						
+						
 					//}
 					
 					
@@ -2984,6 +3077,30 @@
 	     // wait for arduino to init and get data before calling the video select routines		
 				
 
+
+    private function serproxyTextonLoaded(e:Event):void {
+			var serproxyArrayOfLines:Array = e.target.data.split(/\n/);
+			
+			if (myXML.board_version == "5") {  //so if we have an Arduino Uno based board, let's check if we have the right baud right in serproxy.cfg
+					if ( serproxyArrayOfLines.indexOf("comm_baud=57600") == -1 ) {  //-1 means no match so we have a problem and need to tell the user
+						trace ("We have an Arduino Uno board but baud rate in serproxy is not 57600");
+						 AlertManager.createAlert(this, "IMPORTANT!!! Your selected Magic Mirror board / kit version does not match the settings in serproxy.cfg which means the DIY Magic Mirror will not be detected. To resolve, just copy serproxyv5.cfg to serproxy.cfg (overwriting this file) from " + String(DIYMagicMirrorRoot.nativePath) + " and then close serproxy.exe and restart");
+					}
+					else {
+						trace ("We have an Arduino Uno board and serproxy baud is 57600 so we're good");
+					}
+			}
+			
+			if (myXML.board_version != "5") {  //so if we have an Arduino Uno based board, let's check if we have the right baud right in serproxy.cfg
+					if ( serproxyArrayOfLines.indexOf("comm_baud=115200") == -1 ) {  //-1 means no match so we have a problem and need to tell the user
+						trace ("We have an original sensor hub, seeeduino 3.0, older arduino and baud rate in serproxy is not 115200");
+						 AlertManager.createAlert(this, "IMPORTANT!!! Your selected Magic Mirror board / kit version does not match the settings in serproxy.cfg which means the DIY Magic Mirror will not be detected. To resolve, just copy serproxyv4.cfg to serproxy.cfg (overwriting this file) from " + String(DIYMagicMirrorRoot.nativePath) + " and then close serproxy.exe and restart");
+					}
+					else {
+						trace ("We have an original sensor hub, seeeduino 3.0, older arduino and baud rate in serproxy 115200 so we're good");
+					}
+			}
+	}
 	
 	private function BuildUI():void {
 		LabelTextFormat.font = "Arial";
@@ -3063,7 +3180,7 @@
 		stockButton.y = 455;
 		stockButton.width = 96;
 		stockButton.height = 22;
-		stockButton.label = "Stock";
+		stockButton.label = "Money";
 		
 		addChild(SlideStartButton);
 		SlideStartButton.x = 48;
@@ -3296,7 +3413,7 @@
 		if (foundArduino != 1) {  //show the error box if the Arduno was not found
 				StartUpText.visible = false;
 				mirror_did_not_init_text.visible = true;
-				mirror_did_not_init_text.text = "The Magic Mirror did not initialize. Please check the following: 1. The Sensor Hub is plugged into your USB port 2. The Sensor Hub port number is set correctly in the configuration program 3. The serial proxy is running (serproxy on Windows and ser2net on Mac & Linux) 4. If you assembled your own Sensor Hub, ensure you did the one time upload of Firmata to the Arduino. 5. Restart and choose 'Run Magic Mirror with Board Reset'";			
+				mirror_did_not_init_text.text = "The Magic Mirror did not initialize. Please check the following: 1. The Sensor Hub/Kit is plugged into your USB port 2. The detected COM Port MUST BE 9 or less 3. The Sensor Hub port number is set correctly in the configuration program 4. The serial proxy is running (serproxy on Windows and ser2net on Mac & Linux) 5. If using an Arduino Uno, ensure you've uploaded the 'Standard Firmata' sketch using Arduino IDE 1.8.5 or higher";			
 		}
 	}
 	
@@ -3758,6 +3875,8 @@
 	}
 	
 	public function switch_mode():void {  
+	
+			initPhotoboothSounds(); //re-init the photobooth sounds paths
 			
 			switch (mode_select)  //sets the video playlists based on the mode
 				{
@@ -3953,16 +4072,13 @@
 					photobooth_thanksSoundPath = photobooth_thanksSoundPathp;
 				}
 				
-			trace("photobooth intro sound path: " + photobooth_IntroSoundPath);
-				
 			initPhotoboothSounds(); //re-init the photobooth sounds
 			
-			trace ("idle clip" + idle_clip);
+			trace ("idle clip: " + idle_clip);
 				
 			if (doorcam_on == "on") {
 				myVid2.source = doorbell_clip;
 			}
-			
 			
 			if (idle_videos == "off") {
 				idle_clip = idle_black;
@@ -4017,7 +4133,7 @@
 			}			
 			
 			//***************************************************************
-		
+		    trace ("went here before idle clip play");
 			myVid.play(idle_clip); //start the idle clip and then wait for events to happen
 		
        } //end switch mode function
@@ -6071,7 +6187,164 @@
 			
 			//stockLoader.load(new URLRequest("http://download.finance.yahoo.com/d/quotes.csv?s=" + stock_string + "&f=c1&e=.csv"));  //this api has been discontinued by Yahoo , boo!
 			
-			stockLoader.load(new URLRequest("https://api.iextrading.com/1.0/stock/market/batch?symbols=" + stock_string + "&types=quote")); //this api is from https://iextrading.com/
+			if (bitcoin_mode == "on") {
+				
+				var todayDate:Date = new Date(); //Today, we need to get string in this format 2018-06-05 or yyyy-MM-dd for the bitcoin API
+				var today:String;
+				var yesterday:String;
+				
+				var df:DateTimeFormatter = new DateTimeFormatter("");
+				df.setDateTimePattern("yyyy-MM-dd")
+				
+				var yesterdayDate:Date = new Date();
+				yesterdayDate.setDate(todayDate.date -1);
+				
+				trace(df.format(todayDate)); // Outputs: 2017-07-27 today
+				trace(df.format(yesterdayDate)); // 
+				
+				today = df.format(todayDate);
+				yesterday = df.format(yesterdayDate);
+				
+				//bitcoinLoaderYesterday.load(new URLRequest("https://api.coindesk.com/v1/bpi/historical/close.json?start=2018-06-06&end=2018-06-07"));
+				bitcoinLoaderYesterday.load(new URLRequest("https://api.coindesk.com/v1/bpi/historical/close.json?start=" + yesterday + "&end=" + today));
+				
+
+			}
+			else {
+			
+				stockLoader.load(new URLRequest("https://api.iextrading.com/1.0/stock/market/batch?symbols=" + stock_string + "&types=quote")); //this api is from https://iextrading.com/
+			}
+		
+	}
+	
+	private function parseDate( str : String ) : Date {
+		var matches : Array = str.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+	
+		var d : Date = new Date();
+	
+		d.setUTCFullYear(int(matches[1]), int(matches[2]) - 1, int(matches[3]));
+	
+		return d;
+	}
+	
+	private function bitcoinLoadedYesterday(evt:Event):void {
+		
+			//here is the json format result, we are getting current date and current date - 1
+			//{"bpi":{"2018-06-05":7616.8913,"2018-06-06":7655.9788},"disclaimer":"This data was produced from the CoinDesk Bitcoin Price Index. BPI value data returned as USD.","time":{"updated":"Jun 7, 2018 00:03:00 UTC","updatedISO":"2018-06-07T00:03:00+00:00"}}
+			
+			//var bitcoinPriceToday:Number; //we're not using this one
+			//var bitcoinPriceChange:Number;
+			
+			trace (bitcoinLoaderYesterday.data);
+			var bitcoinPriceYesterdayObject:Object = JSON.parse(bitcoinLoaderYesterday.data);
+			
+			//trace (bitcoinPrice.time.updated);
+			//trace ((bitcoinPrice.time.2018-06-05); //this doesn't compile so have to do the hack below
+			
+			var y = 0;
+			for each (var child:Object in bitcoinPriceYesterdayObject.bpi)  {
+    				y++;
+					if (y == 1) {
+						bitcoinPriceYesterday = Number(child);  //this is yesetrday price
+					}
+					/*if (y == 2) {
+						bitcoinPriceToday = Number(child);     // this is today's price but we don't use as it's not the latest, hence the next function
+					}*/
+			}
+			trace ("Bitcoin Yesterday Value = " + bitcoinPriceYesterday * bitcoin_amount);
+			//trace ("Bitcoin Today Value = " + bitcoinPriceToday * bitcoin_amount);
+			
+			//now let's make another call and get the current bitcoin price
+			//bitcoinLoaderCurrent.load(new URLRequest("https://api.coindesk.com/v1/bpi/currentprice/USD.json"));
+			bitcoinLoaderCurrent.load(new URLRequest("https://api.coinmarketcap.com/v2/ticker/1/"));
+			
+	}
+	
+	private function bitcoinLoadedCurrent(evt:Event):void {
+		//here's the result we're going to parse for coindesk API
+		/*{"time":{"updated":"Jun 8, 2018 05:25:00 UTC","updatedISO":"2018-06-08T05:25:00+00:00","updateduk":"Jun 8, 2018 at 06:25 BST"},"disclaimer":"
+		This data was produced from the CoinDesk Bitcoin Price Index (USD). Non-USD currency data converted using hourly conversion 
+		rate from openexchangerates.org","bpi":{"USD":{"code":"USD","rate":"7,634.6838","description":"United States Dollar","rate_float":7634.6838}}}*/
+		
+/*			{
+		"data": {
+			"id": 1, 
+			"name": "Bitcoin", 
+			"symbol": "BTC", 
+			"website_slug": "bitcoin", 
+			"rank": 1, 
+			"circulating_supply": 17084850.0, 
+			"total_supply": 17084850.0, 
+			"max_supply": 21000000.0, 
+			"quotes": {
+				"USD": {
+					"price": 7348.62, 
+					"volume_24h": 4124430000.0, 
+					"market_cap": 125550070407.0, 
+					"percent_change_1h": -0.89, 
+					"percent_change_24h": -4.0, 
+					"percent_change_7d": -3.95
+				}
+			}, 
+			"last_updated": 1528595074
+		}, 
+		"metadata": {
+			"timestamp": 1528594850, 
+			"error": null
+		}
+	}
+*/		
+		//trace (bitcoinPrice.time.updated);
+		
+		var bitcoinStringTemp:String;
+		
+		//trace (bitcoinLoaderCurrent.data);
+		var bitcoinPriceCurrentObject:Object = JSON.parse(bitcoinLoaderCurrent.data);
+		
+		//trace ("Bitcoin Current Price: " + bitcoinPriceCurrentObject.data.quotes.USD.price);
+		
+		//this was used for the coindesk API which we stopped using
+		/*var z = 0;
+		for each (var parent:Object in bitcoinPriceCurrentObject)
+			{
+				// loop child array
+				for each (var child:Object in parent)
+				{
+					// loop grandchild object
+					for each (var grandchild:Object in child)
+					{
+						z++;
+						//trace(z + "grandchild: " + grandchild);
+						if (z == 4) {                                //for some weird reason, number z=2 returns NaN
+							//bitcoinPriceCurrent = grandchild;
+							//bitcoinPriceCurrent = Number(grandchild);  //this is yesetrday price
+							bitcoinPriceCurrent = Number(grandchild);
+						}
+					}
+				}
+			}*/
+			
+		bitcoinPriceCurrent = Number(bitcoinPriceCurrentObject.data.quotes.USD.price);
+		
+		trace ("Bitcoin Current Price: " + bitcoinPriceCurrent);
+		trace ("Bitcoin Current Value = " + bitcoinPriceCurrent * bitcoin_amount);
+		bitcoinPriceChange = (bitcoinPriceCurrent * bitcoin_amount) - (bitcoinPriceYesterday * bitcoin_amount);
+		trace ("Bitcoin Total Value Change Is: " + bitcoinPriceChange);
+		Stock.text = ("Bitcoin Total Value Change Is: " + bitcoinPriceChange);
+		stockPriceChange = NumberUtilities.round(bitcoinPriceChange,1); //this is a key variable , can re-use
+		
+		if(!isNaN(stockPriceChange))
+			{
+			  bitcoin();
+		}
+		else {
+			  Stock.text = ("Bitcoin API did not return a valid value");
+			  trace ("Bitcoin API did not return a valid value");
+			  //need to reset the videos flags becasue videoplaying = 1 was set when touched
+			  ResetVideoFlags();
+		}
+		
+		
 		
 	}
 	
@@ -6096,7 +6369,7 @@
 			
 	}
 	
-	/*private function stockLoaded(evt:Event):void //triggered when file was loaded , OLD function from the Yahoo Stock API, now replaced with above
+	/*private function stockLoaded(evt:Event):void //triggered when file was loaded , OLD function from the Yahoo Stock API which broke, now replaced with above
 		{
 			stockPriceChange = 0; //reset this back to 0 as it will be called multiple times
 			var sstring = stockLoader.data;			
@@ -6117,6 +6390,119 @@
 			
 	} // end stockLoaded function*/
 			
+	
+	
+	private function bitcoin():void {
+	
+	stockweatherplaying = 1;
+		if (stockPriceChange > bitcoin_good_threshold) {					
+				if (mode_select == "tts_mode") {							
+					if (custom_audio == "on") {
+						say_custom_audio(stock_up_mp3);
+					}
+					else {
+						
+						say(bitcoin_up_tts + " " + String(stockPriceChange));
+						
+					}
+					
+					if (lipsync_feature == "on") {
+						myVid.play(lipsync_clip);
+					}
+					else {
+						myVid.play(stock_up_clip);
+					}				
+				}	
+				else {
+						myVid.play(stock_up_clip);
+				}
+				
+				Stock.text = ("Bitcoin Up: " + stockPriceChange);			
+				StockTextFormat.color = 0x00CC33;  //green
+				if (LED_mode != "fire" && stand_alone != "on") {
+					a.writeDigitalPin(LED1_pin, Arduino.LOW); //turn it off to start
+					a.writeDigitalPin(LED2_pin, Arduino.HIGH); //turn it off to start
+					a.writeDigitalPin(LED3_pin, Arduino.LOW); //turn it off to start
+					a.writeDigitalPin(LED4_pin, Arduino.LOW); //turn it off to start		
+				}			
+		}
+		
+		if (stockPriceChange < bitcoin_bad_threshold) {
+			
+			if (mode_select == "tts_mode") {							
+					if (custom_audio == "on") {
+						say_custom_audio(stock_down_mp3);
+					}
+					else {
+						
+						say(bitcoin_down_tts + " " + String(stockPriceChange));
+					}		
+					
+				if (lipsync_feature == "on") {
+					myVid.play(lipsync_clip);
+				}
+				else {
+					myVid.play(stock_down_clip);			
+				}			
+			}	
+			else {
+				myVid.play(stock_down_clip);		
+			}
+			
+			
+			Stock.text = ("Bitcoin Down: " + stockPriceChange);
+			StockTextFormat.color = 0xFF0033; //red
+			//stock_display.backgroundColor = 0xFF0033; //white background			
+			if (LED_mode != "fire" && stand_alone != "on") {
+				a.writeDigitalPin(LED1_pin, Arduino.LOW); //turn it off to start
+				a.writeDigitalPin(LED2_pin, Arduino.LOW); //turn it off to start
+				a.writeDigitalPin(LED3_pin, Arduino.LOW); //turn it off to start
+				a.writeDigitalPin(LED4_pin, Arduino.HIGH); //turn it off to start		
+			}
+		}
+		if ((stockPriceChange < bitcoin_good_threshold) && (stockPriceChange > bitcoin_bad_threshold)) {
+			
+			if (mode_select == "tts_mode") {							
+					if (custom_audio == "on") {
+						say_custom_audio(stock_no_change_mp3);
+					}
+					else {
+						say(bitcoin_no_change_tts + " " + String(stockPriceChange));
+					}		
+					
+					if (lipsync_feature == "on") {
+						myVid.play(lipsync_clip);
+					}
+					else {
+						myVid.play(stock_no_change_clip);					
+					}		
+			}	
+			else {
+				myVid.play(stock_no_change_clip);				
+			}
+			
+			
+			var myBool:Boolean ;
+			myBool = (stockPriceChange < bitcoin_good_threshold && stockPriceChange > bitcoin_bad_threshold);
+			trace (bitcoin_good_threshold + " " + bitcoin_bad_threshold);
+			trace ("bitcoin boolean " + myBool);
+			Stock.text = ("Bitcoin No Change");
+			StockTextFormat.color = 0xF5F5F5; //white
+			//stock_display.backgroundColor = 0xF5F5F5; //white background			
+			if (LED_mode != "fire" && stand_alone != "on") {
+				a.writeDigitalPin(LED1_pin, Arduino.LOW); //turn it off to start
+				a.writeDigitalPin(LED2_pin, Arduino.LOW); //turn it off to start
+				a.writeDigitalPin(LED3_pin, Arduino.HIGH); //turn it off to start
+				a.writeDigitalPin(LED4_pin, Arduino.LOW); //turn it off to start		
+			}
+		}				
+		if (display_stock_text == "on") {  //only display the stock text if set to on
+			StockDisplayTextTimer.start(); //start the timer to delay 1 second before displaying stock text
+		}
+		
+		
+	}
+	
 	private function stock():void {
 		
 		stockweatherplaying = 1;
@@ -6175,7 +6561,6 @@
 			}
 			
 			
-			
 			Stock.text = ("Stock is Down");
 			StockTextFormat.color = 0xFF0033; //red
 			//stock_display.backgroundColor = 0xFF0033; //white background			
@@ -6206,8 +6591,6 @@
 			else {
 				myVid.play(stock_no_change_clip);				
 			}
-			
-			
 							
 			var myBool:Boolean ;
 			myBool = (stockPriceChange < stock_good_threshold && stockPriceChange > stock_bad_threshold);
@@ -6228,16 +6611,30 @@
 		}
 	}	
 	
+	
+	
 	private function StockDisplayTextTimerEvent(e:TimerEvent):void { 
 	    stock_display.visible = true;
 		stock_display.defaultTextFormat = StockTextFormat; //need to reapply this again since we changed the font colors above
 		if (stockPriceChange > 0) {  //the number is postive
-			stock_display.text = ("+" + String(stockPriceChange)); //displays the stock text; 
+			if (bitcoin_mode == "on") {
+				stock_display.text = ("$" + String(stockPriceChange)); //displays the stock text; 
+			}
+			else {
+				stock_display.text = ("+" + String(stockPriceChange)); //displays the stock text; 
+			}
 			StockDisplayTextTimer.reset(); //reset the timer so it can play again			
 		}
 		
 		else {
-			stock_display.text = String(stockPriceChange); //displays the stock text; 
+			if (bitcoin_mode == "on") {
+				stock_display.text = ("$" + String(stockPriceChange)); //displays the stock text; 
+			}
+			else {
+				stock_display.text = ("+" + String(stockPriceChange)); //displays the stock text; 
+			}
+			//stock_display.text = String(stockPriceChange); //displays the stock text; 
+			
 			StockDisplayTextTimer.reset(); //reset the timer so it can play again
 		}
 		StockDisplayTextTimer5s.start();
@@ -8751,7 +9148,9 @@
 		public function initial_values(e:TimerEvent):void
         {
           		  
-		  StartUpText.visible = false;		
+		// photoboothInitSounds(); //sets the paths for the photobooth sounds, we were getting an error before becasue the paths were not set before calling below
+		 
+		 StartUpText.visible = false;		
 		 		   
 		 if (digital_switches == "on") { //get the initial values of the digital sensors		 
 			initial_switch1_value = switch1_value; //check if null
@@ -8769,6 +9168,8 @@
 				initial_switch6_value = switch6_value;
 			}
 		 }
+		 
+		 photoboothInitSounds(); //init the paths for the photobooth sounds
 		 
 		 if (analog_input1 == "on") {initial_touch1_value = touch1_value;} //analog pin 1/touch sensor 1
 		 if (analog_input2 == "on") {initial_touch2_value = touch2_value;} //analog pin 2 / touch sensor 2
@@ -9026,6 +9427,7 @@
 		video_playing = 0;
 		x10_on_off_flag = 0;
 		
+		
 		initPhotoboothSounds();
 		
        } //end initial values
@@ -9260,7 +9662,8 @@
 	   
 	private function initPhotoboothSounds(): void {
 		
-		//the character must have been initialized before going here		
+		    //the character must have been initialized before going here		
+			
 			photobooth_IntroSound = new Sound(new URLRequest(photobooth_IntroSoundPath));
 			photobooth_getReadySound = new Sound(new URLRequest(photobooth_getReadySoundPath));
 			photobooth_pic2Sound = new Sound(new URLRequest(photobooth_pic2SoundPath));	
@@ -9635,10 +10038,7 @@
 		 photobooth_proof2b.visible = false;
 		 photobooth_proof3b.visible = false;
 		 photobooth_proof4b.visible = false;
-	 }	 
-	
-	
-	
+	 }	
 }
 
 	private function photoboothInitSounds():void {

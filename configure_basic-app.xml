@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <application xmlns="http://ns.adobe.com/air/application/3.2">
     <id>configure-basic</id>
-    <versionNumber>7.10</versionNumber>
+    <versionNumber>7.11</versionNumber>
     <filename>configure_basic</filename>
     <description/>
   <!-- To localize the description, use the following format for the description element.

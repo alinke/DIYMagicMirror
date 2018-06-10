@@ -209,6 +209,8 @@
 	  
 	  private var stock_good_threshold:Number;
 	  private var stock_bad_threshold:Number;
+	  private var bitcoin_good_threshold:Number;
+	  private var bitcoin_bad_threshold:Number;
 	  
 	  private var pictLdr:Loader = new Loader();
 	  private var Frame_Loader:Loader = new Loader();
@@ -905,6 +907,7 @@
 	private var TTS_rbg_engine:RadioButtonGroup = new RadioButtonGroup("TTS_rbg_engine");
 	private var photobooth_printing_rbg:RadioButtonGroup = new RadioButtonGroup("photobooth_printing_rbg");
 	private var frame_rbg:RadioButtonGroup = new RadioButtonGroup("frame_rbg");
+	private var money_mode_rbg:RadioButtonGroup = new RadioButtonGroup("money_mode_rbg");
 	private var webcamvideo_rbg:RadioButtonGroup = new RadioButtonGroup("webcamvideo_rbg");
 	
 	private var lipsync_checkbox:CheckBox = new CheckBox();
@@ -914,6 +917,10 @@
 	private var internet:int=0;
 	
 	private var fileMenu:NativeMenuItem; 
+	
+	private var DIYMagicMirrorRoot:File = new File(); 
+	private var serproxyCFG:File = new File();
+	private var Windows64Bit:Boolean;
 		
 	///******************************************	
 	//var service : PicasaService = new PicasaService();	
@@ -1001,10 +1008,6 @@
             } 
             return null; 
         } 
-
-
-
-		 
 		 
 		 private function onInvoke(invokeEvent:InvokeEvent):void   {  
 		  
@@ -1037,11 +1040,21 @@
 						file3 = file3.resolvePath("../../../Program Files/DIY Magic Mirror/mirror/mirror.exe");							
 						
 						file2 = File.desktopDirectory;	
-						file2 = file2.resolvePath("../../../Program Files/DIY Magic Mirror/mirror/");							
+						file2 = file2.resolvePath("../../../Program Files/DIY Magic Mirror/mirror/");		
 						
 						if (file3.exists == false) {  //if still false, then must be 64-bit
 							file2 = File.desktopDirectory;						
-							file2 = file2.resolvePath("../../../Program Files (x86)/DIY Magic Mirror/mirror/");							
+							file2 = file2.resolvePath("../../../Program Files (x86)/DIY Magic Mirror/mirror/");			
+							Windows64Bit = true;
+							DIYMagicMirrorRoot = File.desktopDirectory;		
+							DIYMagicMirrorRoot = DIYMagicMirrorRoot.resolvePath("../../../Program Files (x86)/DIY Magic Mirror/");	
+							trace ("we have 64 bit Windows");
+						}
+						else {
+							Windows64Bit = false;
+							DIYMagicMirrorRoot = File.desktopDirectory;		
+							DIYMagicMirrorRoot = DIYMagicMirrorRoot.resolvePath("../../../Program Files/DIY Magic Mirror/");	
+							trace ("we don't have 64 bit Windows");
 						}
 						
 						homepath = String(file2.nativePath) + "/";
@@ -1146,7 +1159,7 @@
 		//now let's check and make sure the config file corresponds to the version this code is expecting and if not, let's create a new one
 		//use this later when a new config XML needs to be created on the fly
 		
-		if (Number(myXML.version) < 7.10) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
+		if (Number(myXML.version) < 7.11) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
 			AlertManager.createAlert(this, "Your configuration file was an older version and has been updated, your current settings have been maintained");
 			//before blowing the file away, let's read it into another XML so we have a record of the old settings
 			filestream.open(file, FileMode.READ);
@@ -1231,6 +1244,11 @@
 			if (myXMLold.prox2_before_prox1 != undefined) { myXML.prox2_before_prox1 = myXMLold.prox2_before_prox1; }
 			if (myXMLold.stock_good_threshold != undefined) { myXML.stock_good_threshold = myXMLold.stock_good_threshold; }
 			if (myXMLold.stock_bad_threshold != undefined) { myXML.stock_bad_threshold = myXMLold.stock_bad_threshold; }
+			
+			if (myXMLold.bitcoin_good_threshold != undefined) { myXML.bitcoin_good_threshold = myXMLold.bitcoin_good_threshold; }
+			if (myXMLold.bitcoin_bad_threshold != undefined) { myXML.bitcoin_bad_threshold = myXMLold.bitcoin_bad_threshold; }
+			if (myXMLold.bitcoin_amount != undefined) { myXML.bitcoin_amount = myXMLold.amount; }
+			if (myXMLold.bitcoin_mode != undefined) { myXML.bitcoin_mode = myXMLold.bitcoin_mode; }
 			
 			if (myXMLold.no_resize != undefined) { myXML.no_resize = myXMLold.no_resize; }
 			
@@ -1636,6 +1654,10 @@
 			
 			stock_good_threshold = Number(myXML.stock_good_threshold);
 			stock_bad_threshold = Number(myXML.stock_bad_threshold);
+			
+			bitcoin_good_threshold = Number(myXML.bitcoin_good_threshold);
+			bitcoin_bad_threshold = Number(myXML.bitcoin_bad_threshold);
+			
 			weather_display = myXML.wather_display;
 			forecast_cutoff = myXML.forecast_cutoff;
 			x10_commands = myXML.x10_commands;
@@ -1803,6 +1825,8 @@
 		switch4_radio_on.addEventListener(Event.CHANGE, Digital4Changed);
 		switch5_radio_on.addEventListener(Event.CHANGE, Digital5Changed);
 		
+		//bitcoin_radio.addEventListener(Event.CHANGE, MoneyModeChanged);
+		
 		quiz_mode_check.addEventListener(Event.CHANGE, QuizModeCheckChanged);	
 		no_resize_check.addEventListener(Event.CHANGE, NoResizeCheckChanged);	
 		photoboothProofPreview_check.addEventListener(Event.CHANGE, photoboothProofPreview_checkChanged);	
@@ -1914,6 +1938,26 @@
 	  initial_values();
 	  BuildPositionUI();
 	  BuildUI();
+	  
+	  switch (osType) {
+					
+		case "WIN":			
+			
+			if (Windows64Bit == true) {
+				serproxyCFG   = File.desktopDirectory;	
+				serproxyCFG   = serproxyCFG.resolvePath("../../../Program Files (x86)/DIY Magic Mirror/serproxy.cfg");	
+			}
+			else {
+				serproxyCFG   = File.desktopDirectory;	
+				serproxyCFG   = serproxyCFG.resolvePath("../../../Program Files/DIY Magic Mirror/serproxy.cfg");	
+			}
+			var serproxyTextLoader:URLLoader = new URLLoader();
+			serproxyTextLoader.addEventListener(Event.COMPLETE, serproxyTextonLoaded);
+			serproxyTextLoader.load(new URLRequest(serproxyCFG.nativePath));
+			
+			break;						
+							
+	}  //end switch
 	
 	  weather_display2.visible = false;
 	  stock_display.visible = false;
@@ -1938,8 +1982,41 @@
 	  } // ********end RunMirror initMediaPlayer function ***********
 	     // wait for arduino to init and get data before calling the video select routines		
 				
+	
+	
+	private function serproxyTextonLoaded(e:Event):void {
+			var serproxyArrayOfLines:Array = e.target.data.split(/\n/);
+			
+			if (myXML.board_version == "5") {  //so if we have an Arduino Uno based board, let's check if we have the right baud right in serproxy.cfg
+					if ( serproxyArrayOfLines.indexOf("comm_baud=57600") == -1 ) {  //-1 means no match so we have a problem and need to tell the user
+						trace ("We have an Arduino Uno board but baud rate in serproxy is not 57600");
+						 AlertManager.createAlert(this, "IMPORTANT!!! Your selected Magic Mirror board / kit version does not match the settings in serproxy.cfg which means the DIY Magic Mirror will not be detected. To resolve, just copy serproxyv5.cfg to serproxy.cfg (overwriting this file) from " + String(DIYMagicMirrorRoot.nativePath) + " and then close serproxy.exe and restart");
+					}
+					else {
+						trace ("We have an Arduino Uno board and serproxy baud is 57600 so we're good");
+					}
+			}
+			
+			if (myXML.board_version != "5") {  //so if we have an Arduino Uno based board, let's check if we have the right baud right in serproxy.cfg
+					if ( serproxyArrayOfLines.indexOf("comm_baud=115200") == -1 ) {  //-1 means no match so we have a problem and need to tell the user
+						trace ("We have an original sensor hub, seeeduino 3.0, older arduino and baud rate in serproxy is not 115200");
+						 AlertManager.createAlert(this, "IMPORTANT!!! Your selected Magic Mirror board / kit version does not match the settings in serproxy.cfg which means the DIY Magic Mirror will not be detected. To resolve, just copy serproxyv4.cfg to serproxy.cfg (overwriting this file) from " + String(DIYMagicMirrorRoot.nativePath) + " and then close serproxy.exe and restart");
+					}
+					else {
+						trace ("We have an original sensor hub, seeeduino 3.0, older arduino and baud rate in serproxy 115200 so we're good");
+					}
+			}
+	}
+	
 	private function BuildMainUI():void { //one time initial
 				
+		enter_stock_input.tabIndex = 1;
+		stock_good_threshold_input.tabIndex = 2;
+		stock_bad_threshold_input.tabIndex = 3;
+		bitcoin_amount_input.tabIndex = 4;
+		bitcoin_good_threshold_input.tabIndex = 5;
+		bitcoin_bad_threshold_input.tabIndex = 6;
+		
 		radiotext.color = 0xFFFFFF;
 		radiotext.font = "Arial";
 		radiotext.size = 12;	
@@ -3489,7 +3566,7 @@
 		version_text.height = 19.85;
 		version_text.defaultTextFormat = VersionTextFormat;		
 		//version_text.text = myXML.branding + " Magic Mirror Configuration Version 5.0";
-		version_text.text = "Version 7.10";
+		version_text.text = "Version 7.11";
 		//version_text.text = "DIY Magic Mirror Configuration Version " + myXML.version;
 		
 		//square.graphics.lineStyle(1,0x000000);
@@ -3548,8 +3625,14 @@
 		forecast_cutoff_input.text = myXML.forecast_cutoff; 
 		reg_code_input.text = myXML.reg_code;
 		startup_delay_input.text = myXML.startup_delay;
+		
 		stock_good_threshold_input.text = myXML.stock_good_threshold;
 		stock_bad_threshold_input.text = myXML.stock_bad_threshold;
+		
+		bitcoin_amount_input.text = myXML.bitcoin_amount;
+		bitcoin_good_threshold_input.text = myXML.bitcoin_good_threshold;
+		bitcoin_bad_threshold_input.text = myXML.bitcoin_bad_threshold;
+		
 		//com_port_input.text = myXML.com_port;
 		good_weather_threshold_input.text = myXML.good_weather_threshold;
 		
@@ -3711,6 +3794,9 @@
 		
 		frame_radio_on.group = frame_rbg; 
 	    frame_radio_off.group = frame_rbg;
+		
+		stocks_radio.group = money_mode_rbg;
+		bitcoin_radio.group = money_mode_rbg;
 		
 		webcamvideo_radio_on.group = webcamvideo_rbg; 
 	    webcamvideo_radio_off.group = webcamvideo_rbg;
@@ -4352,6 +4438,12 @@
 			frame_radio_on.selected = true;			
 		}
 		else {frame_radio_off.selected = true;			
+		}
+		
+		if (myXML.bitcoin_mode == "on")  {
+			bitcoin_radio.selected = true;			
+		}
+		else {stocks_radio.selected = true;			
 		}
 		
 		if (myXML.webcam_on == "on")  {
@@ -8571,6 +8663,27 @@
 		}		
 	}
 	
+	/*private function MoneyModeChanged(event:Event):void {    
+		if (bitcoin_radio.selected == true) {  //if touch1 is on, then let enable this check box
+			enter_stock_input.enabled = false;
+			stock_good_threshold_input.enabled = false;
+			stock_bad_threshold_input.enabled = false;
+			bitcoin_amount_input.enabled = true;
+			bitcoin_good_threshold_input.enabled = true;
+			bitcoin_bad_threshold_input.enabled = true;
+		}
+		else {
+			enter_stock_input.enabled = true;
+			stock_good_threshold_input.enabled = true;
+			stock_bad_threshold_input.enabled = true;
+			bitcoin_amount_input.enabled = false;
+			bitcoin_good_threshold_input.enabled = false;
+			bitcoin_bad_threshold_input.enabled = false;
+		}		
+	}*/
+	
+	
+	
 	private function Analog2Changed(event:Event):void {    
 		if (analog2_radio_on.selected == true) {  //if touch2 is on, then let enable this check box
 			analog2_video2_check.enabled = true;
@@ -9130,7 +9243,7 @@ var newconfigXML:XML =
   <display_mode_preset>0</display_mode_preset>
   <idle_videos>on</idle_videos>
   <video_resolution>high</video_resolution>
-  <version>7.10</version>
+  <version>7.11</version>
   <digital_switches>on</digital_switches>
   <switch1>off</switch1>
   <switch2>off</switch2>
@@ -9219,6 +9332,10 @@ var newconfigXML:XML =
   <prox2_before_prox1>on</prox2_before_prox1>
   <stock_good_threshold>3</stock_good_threshold>
   <stock_bad_threshold>-1</stock_bad_threshold>
+  <bitcoin_good_threshold>500</bitcoin_good_threshold>
+  <bitcoin_bad_threshold>-300</bitcoin_bad_threshold>
+  <bitcoin_mode>off</bitcoin_mode>
+  <bitcoin_amount>1</bitcoin_amount>
   <full_screen>no</full_screen>
   <no_resize>off</no_resize>
   <video_scaling_factor>2.25</video_scaling_factor>
@@ -9597,6 +9714,9 @@ var newconfigXML:XML =
   <stock_up_tts>Your stocks were up today with a rise of</stock_up_tts>
   <stock_no_change_tts>Not much change in your stocks today, the change was</stock_no_change_tts>
   <stock_down_tts>Your stocks were down with a loss of</stock_down_tts>
+  <bitcoin_up_tts>Your Bitcoin was up today with a rise of</bitcoin_up_tts>
+  <bitcoin_no_change_tts>There was not much change in your Bitcoin today, the change was</bitcoin_no_change_tts>
+  <bitcoin_down_tts>Your Bitcoin was down with a loss of</bitcoin_down_tts>
   <doorbell_tts>You've got a visitor at the door</doorbell_tts>
   <x10_on_tts>I will now turn on your X-10 device</x10_on_tts>
   <x10_off_tts>I will now turn off your X-10 device</x10_off_tts>
@@ -9674,6 +9794,9 @@ var newconfigXML:XML =
 		myXML.startup_delay = startup_delay_input.text; 
 		myXML.stock_good_threshold = stock_good_threshold_input.text;
 		myXML.stock_bad_threshold = stock_bad_threshold_input.text;
+		myXML.bitcoin_amount = bitcoin_amount_input.text;
+		myXML.bitcoin_good_threshold = bitcoin_good_threshold_input.text;
+		myXML.bitcoin_bad_threshold = bitcoin_bad_threshold_input.text;
 		
 		myXML.alcohol_baseline = alcohol_baseline_text.text;
 		myXML.alcohol_level1   = alcohol_level1_text.text;
@@ -10189,7 +10312,13 @@ var newconfigXML:XML =
 		if (frame_radio_on.selected == true)  {   
 			myXML.frame = "on";			
 		}
-		else {myXML.frame = "off";}		
+		else {myXML.frame = "off";}	
+		
+		if (bitcoin_radio.selected == true)  {   
+			myXML.bitcoin_mode = "on";			
+		}
+		else {myXML.bitcoin_mode = "off";}		
+		
 		
 		if (webcamvideo_radio_on.selected == true)  {   
 			myXML.webcam_on = "on";			
@@ -10803,6 +10932,7 @@ var newconfigXML:XML =
 		myXML.forecast_cutoff = "11";
 		myXML.stock_good_threshold = "3";
 		myXML.stock_bad_threshold = "-1";		
+		myXML.bitcoin_amount = "1";
 		
 		myXML.tts_feature = "on";
 		myXML.custom_audio = "off";
@@ -10858,6 +10988,8 @@ var newconfigXML:XML =
 		forecast_cutoff_input.text = "11";
 		stock_good_threshold_input.text = "3";
 		stock_bad_threshold_input.text = "-1";		
+		bitcoin_good_threshold_input.text = "500";
+		bitcoin_bad_threshold_input.text = "-300";		
 		
 		alcohol_baseline_text.text = "300";
 	    alcohol_baseline_difference_allowance_text.text = "200";
@@ -11061,6 +11193,9 @@ var newconfigXML:XML =
 		
 		frame_radio_on.selected = false;  
 		myXML.frame == "off";	
+		
+		bitcoin_radio.selected = false;  
+		myXML.bitcoin_mode == "off";
 		
 		webcamvideo_radio_on.selected = false;  
 		myXML.webcam_on == "off";	

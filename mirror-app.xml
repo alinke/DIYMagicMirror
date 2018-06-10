@@ -3,9 +3,9 @@
     <id>com.diymagicmirror.mirror</id>
     <filename>mirror</filename>
     <description/>
-  <!-- To localize the description, use the following format for the description element.<description><text xml:lang="en">English App description goes here</text><text xml:lang="fr">French App description goes here</text><text xml:lang="ja">Japanese App description goes here</text></description>-->
+<!-- To localize the description, use the following format for the description element.<description><text xml:lang="en">English App description goes here</text><text xml:lang="fr">French App description goes here</text><text xml:lang="ja">Japanese App description goes here</text></description>-->
     <name>mirror</name>
-  <!-- To localize the name, use the following format for the name element.<name><text xml:lang="en">English App name goes here</text><text xml:lang="fr">French App name goes here</text><text xml:lang="ja">Japanese App name goes here</text></name>-->
+<!-- To localize the name, use the following format for the name element.<name><text xml:lang="en">English App name goes here</text><text xml:lang="fr">French App name goes here</text><text xml:lang="ja">Japanese App name goes here</text></name>-->
     <copyright/>
     <initialWindow>
         <content>mirror.swf</content>
@@ -29,5 +29,5 @@
     <installFolder>DIY Magic Mirror</installFolder>
     <programMenuFolder>DIY Magic Mirror</programMenuFolder>
     <supportedProfiles>desktop </supportedProfiles>
-    <versionNumber>7.10</versionNumber>
+    <versionNumber>7.11</versionNumber>
 </application>

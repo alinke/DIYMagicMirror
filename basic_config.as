@@ -115,6 +115,11 @@
 	private var PhotoSaveDir:File = new File(); 
 	private var photoboothOverlayImagePath:File = new File();
 	private var photoboothLogoPath:File = new File();
+	
+	
+	//private var serproxyCFGv4:File = new File();
+	//private var serproxyCFGv5:File = new File();
+	
 	private var filestream:FileStream = new FileStream();
 	private var AlertTextFormat:TextFormat = new TextFormat();
 	private var StartupTextFormat:TextFormat = new TextFormat(); //this is the formatter for the startup text field
@@ -318,17 +323,25 @@
 	private var tts_engine_voicerss:RadioButton = new RadioButton; 
 	private var tts_engine_yakitome:RadioButton = new RadioButton;
 	
-	  private var flashPlayerVersion:String = Capabilities.version;
-	  private var osArray:Array = flashPlayerVersion.split(' ');
-	  private var osType:String = osArray[0]; //The operating system: WIN, MAC, LNX
-	  private var versionArray:Array = osArray[1].split(',');//The player versions. 9,0,115,0
-	  private var majorVersion:Number = parseInt(versionArray[0]);
-	  private var majorRevision:Number = parseInt(versionArray[1]);
-	  private var minorVersion:Number = parseInt(versionArray[2]);
-	  
-	  private var fileMenu:NativeMenuItem; 
-	  private var TTS_rbg_engine:RadioButtonGroup = new RadioButtonGroup("TTS_rbg_engine");
+    private var flashPlayerVersion:String = Capabilities.version;
+    private var osArray:Array = flashPlayerVersion.split(' ');
+    private var osType:String = osArray[0]; //The operating system: WIN, MAC, LNX
+    private var versionArray:Array = osArray[1].split(',');//The player versions. 9,0,115,0
+    private var majorVersion:Number = parseInt(versionArray[0]);
+    private var majorRevision:Number = parseInt(versionArray[1]);
+    private var minorVersion:Number = parseInt(versionArray[2]);
+  
+    private var fileMenu:NativeMenuItem; 
+    private var TTS_rbg_engine:RadioButtonGroup = new RadioButtonGroup("TTS_rbg_engine");
+  
+    private var stock_good_threshold:Number;
+	private var stock_bad_threshold:Number;
+	private var bitcoin_good_threshold:Number;
+	private var bitcoin_bad_threshold:Number;
 	
+	private var DIYMagicMirrorRoot:File = new File(); 
+	private var serproxyCFG:File = new File();
+	private var Windows64Bit:Boolean;
 	
 	public function basic_config():void {
 				
@@ -364,11 +377,21 @@
 						file3 = file3.resolvePath("../../../Program Files/DIY Magic Mirror/mirror/mirror.exe");							
 						
 						file2 = File.desktopDirectory;	
-						file2 = file2.resolvePath("../../../Program Files/DIY Magic Mirror/mirror/");							
+						file2 = file2.resolvePath("../../../Program Files/DIY Magic Mirror/mirror/");
 						
 						if (file3.exists == false) {  //if still false, then must be 64-bit
 							file2 = File.desktopDirectory;						
-							file2 = file2.resolvePath("../../../Program Files (x86)/DIY Magic Mirror/mirror/");							
+							file2 = file2.resolvePath("../../../Program Files (x86)/DIY Magic Mirror/mirror/");	
+							Windows64Bit = true;
+							DIYMagicMirrorRoot = File.desktopDirectory;		
+							DIYMagicMirrorRoot = DIYMagicMirrorRoot.resolvePath("../../../Program Files (x86)/DIY Magic Mirror/");	
+							trace ("we have 64 bit Windows");
+						}
+						else {
+							Windows64Bit = false;
+							DIYMagicMirrorRoot = File.desktopDirectory;		
+							DIYMagicMirrorRoot = DIYMagicMirrorRoot.resolvePath("../../../Program Files/DIY Magic Mirror/");	
+							trace ("we don't have 64 bit Windows");
 						}
 						break;						
 					case "LNX":
@@ -382,11 +405,11 @@
 						file3 = file3.resolvePath("../../../Program Files/DIY Magic Mirror/mirror/mirror.exe");							
 						
 						file2 = File.desktopDirectory;	
-						file2 = file2.resolvePath("../../../Program Files/DIY Magic Mirror/mirror/");							
+						file2 = file2.resolvePath("../../../Program Files/DIY Magic Mirror/mirror/");			
 						
 						if (file3.exists == false) {  //if still false, then must be 64-bit
 							file2 = File.desktopDirectory;						
-							file2 = file2.resolvePath("../../../Program Files (x86)/DIY Magic Mirror/mirror/");							
+							file2 = file2.resolvePath("../../../Program Files (x86)/DIY Magic Mirror/mirror/");	
 						}
 						break;						
 				}  //end switch
@@ -398,17 +421,12 @@
 			clear_stock_button.addEventListener(MouseEvent.CLICK, clear_stock);
 			twitterAuthButton.addEventListener(MouseEvent.CLICK,twitterOauthEvent);
 			
-			
-			
 			TTSButton.addEventListener(MouseEvent.CLICK, TTSButtonEvent);
 			LanguageButton.addEventListener(MouseEvent.CLICK, TTSButtonEvent);
 			photoboothButton.addEventListener(MouseEvent.CLICK, photoboothButtonEvent);
 			goBackMain.addEventListener(MouseEvent.CLICK, goBackMainScreen);
 			
-			
 			RunMirror(); //configure the Arduino port and then can do the rest of the config
-			
-			
            
 	}   // end mirror function *************************************
 		
@@ -470,6 +488,48 @@
 			PopulateValues();
 			BuildUI();
 			
+			switch (osType) {
+					
+					case "WIN":			
+						
+						//copy didn't work due to lack of permissions
+						if (Windows64Bit == true) {
+							//serproxyCFGv4 = File.desktopDirectory;	
+							//serproxyCFGv4 = serproxyCFGv4.resolvePath("../../../Program Files (x86)/DIY Magic Mirror/serproxyv4.cfg");	
+							//serproxyCFGv5 = File.desktopDirectory;	
+							//serproxyCFGv5 = serproxyCFGv5.resolvePath("../../../Program Files (x86)/DIY Magic Mirror/serproxyv5.cfg");	
+							serproxyCFG   = File.desktopDirectory;	
+							serproxyCFG   = serproxyCFG.resolvePath("../../../Program Files (x86)/DIY Magic Mirror/serproxy.cfg");	
+						}
+						else {
+							//serproxyCFGv4 = File.desktopDirectory;	
+							//serproxyCFGv4 = serproxyCFGv4.resolvePath("../../../Program Files/DIY Magic Mirror/serproxyv4.cfg");	
+							//serproxyCFGv5 = File.desktopDirectory;	
+							//serproxyCFGv5 = serproxyCFGv5.resolvePath("../../../Program Files/DIY Magic Mirror/serproxyv5.cfg");
+							serproxyCFG   = File.desktopDirectory;	
+							serproxyCFG   = serproxyCFG.resolvePath("../../../Program Files/DIY Magic Mirror/serproxy.cfg");	
+						}
+						
+						/*if (myXML.board_version != "5") {
+							//serproxyCFGv5.copyTo(serproxyCFG, true); 
+							trace ("we copoied serproxyv4");
+						}
+						
+						if (myXML.board_version == "5") {
+							//serproxyCFGv5.copyTo(serproxyCFG, true);  //unfortunately this didn't work due to permissions issue
+							trace ("we copoied serproxyv5");
+							trace(serproxyCFGv5.nativePath);
+						}*/
+						
+						var serproxyTextLoader:URLLoader = new URLLoader();
+						serproxyTextLoader.addEventListener(Event.COMPLETE, serproxyTextonLoaded);
+						serproxyTextLoader.load(new URLRequest(serproxyCFG.nativePath));
+						
+						break;						
+										
+				}  //end switch
+			
+			
 			twitter_mode_rbg.addEventListener(Event.CHANGE, TwitterModeChanged);	
 			photoboothProofPreview_check.addEventListener(Event.CHANGE, photoboothProofPreview_checkChanged);	
 			photobooth_printing_check.addEventListener(Event.CHANGE, photobooth_printing_checkChanged);		
@@ -511,17 +571,51 @@
 			noArduinoFoundTimer.addEventListener(TimerEvent.TIMER_COMPLETE, noArduinoFoundTimerEvent);		  
 			noArduinoFoundTimer.start();	
 			
-			
 			TTS_rbg_engine.addEventListener(Event.CHANGE, TTSEngineChanged);
 				  
 	        
 	  } // ********end RunMirror initMediaPlayer function ***********
+	  
+	private function serproxyTextonLoaded(e:Event):void {
+			var serproxyArrayOfLines:Array = e.target.data.split(/\n/);
+			
+			//trace(serproxyArrayOfLines);
+			
+			/*trace("match is " + serproxyArrayOfLines.indexOf("comm_baud=57600")); //traces the index: 2
+			trace(serproxyArrayOfLines[serproxyArrayOfLines.indexOf("comm_baud=57600")]);
+			
+			if ( serproxyArrayOfLines.indexOf("comm_baud=57600") == -1 ) {
+				trace ("we don't have a match");
+			}
+			else {
+				trace ("we have a match");
+			}*/
+			
+			if (myXML.board_version == "5") {  //so if we have an Arduino Uno based board, let's check if we have the right baud right in serproxy.cfg
+					if ( serproxyArrayOfLines.indexOf("comm_baud=57600") == -1 ) {  //-1 means no match so we have a problem and need to tell the user
+						trace ("We have an Arduino Uno board but baud rate in serproxy is not 57600");
+						 AlertManager.createAlert(this, "IMPORTANT!!! Your selected Magic Mirror board / kit version does not match the settings in serproxy.cfg which means the DIY Magic Mirror will not be detected. To resolve, just copy serproxyv5.cfg to serproxy.cfg (overwriting this file) from " + String(DIYMagicMirrorRoot.nativePath) + " and then close serproxy.exe and restart");
+						//serproxyCFGv5.copyTo(serproxyCFG, true); 
+					}
+					else {
+						trace ("We have an Arduino Uno board and serproxy baud is 57600 so we're good");
+					}
+			}
+			
+			if (myXML.board_version != "5") {  //so if we have an Arduino Uno based board, let's check if we have the right baud right in serproxy.cfg
+					if ( serproxyArrayOfLines.indexOf("comm_baud=115200") == -1 ) {  //-1 means no match so we have a problem and need to tell the user
+						trace ("We have an original sensor hub, seeeduino 3.0, older arduino and baud rate in serproxy is not 115200");
+						 AlertManager.createAlert(this, "IMPORTANT!!! Your selected Magic Mirror board / kit version does not match the settings in serproxy.cfg which means the DIY Magic Mirror will not be detected. To resolve, just copy serproxyv4.cfg to serproxy.cfg (overwriting this file) from " + String(DIYMagicMirrorRoot.nativePath) + " and then close serproxy.exe and restart");
+						//serproxyCFGv4.copyTo(serproxyCFG, true); 
+					}
+					else {
+						trace ("We have an original sensor hub, seeeduino 3.0, older arduino and baud rate in serproxy 115200 so we're good");
+					}
+			}
+	}
 	   
 	
 	private function setupComboBox():void { //setup the combo boxes
-
-			
-			
 			
 			onoff_house_code_input.addItem( { label: "A", data:1 } );
 			onoff_house_code_input.addItem( { label: "B", data:2 } );
@@ -621,7 +715,14 @@
 	
 	private function BuildUI():void {
 		
-		
+		//setting the tab order
+		woeid_input.tabIndex = 1;
+		stock_good_threshold_input.tabIndex = 2;
+		stock_bad_threshold_input.tabIndex = 3;
+		bitcoin_amount_input.tabIndex = 4;
+		bitcoin_good_threshold_input.tabIndex = 5;
+		bitcoin_bad_threshold_input.tabIndex = 6;
+		enter_stock_input.tabIndex = 7;
 		
 		TTSTextFormat.font = myFont.fontName;
 		TTSTextFormat.size = 14;	
@@ -669,7 +770,6 @@
 		addChild(do_not_speak_twitter_search_term_checkbox);
 		do_not_speak_twitter_search_term_checkbox.visible = true;
 		//do_not_speak_twitter_search_term_checkbox.visible = false;
-		
 		
 		tweetBreathalyzer_checkbox.x = 439.90;
 		tweetBreathalyzer_checkbox.y = 258.35;
@@ -2158,7 +2258,11 @@
 					break;
 				}		
 				
-				
+			if (myXML.bitcoin_mode == "on")  {
+				bitcoin_radio.selected = true;			
+			}	
+			else {stocks_radio.selected = true;			
+			}
 			
 			var webcam_restemp2:String;
 			webcam_restemp2 =  myXML.photobooth_videoWidth;
@@ -2625,6 +2729,11 @@
 			stock_good_threshold_input.text = myXML.stock_good_threshold;
 			stock_bad_threshold_input.text = myXML.stock_bad_threshold;
 			
+			bitcoin_amount_input.text = myXML.bitcoin_amount;
+			bitcoin_good_threshold_input.text = myXML.bitcoin_good_threshold;
+			bitcoin_bad_threshold_input.text = myXML.bitcoin_bad_threshold;
+			
+			
 			if (reg_code_input.text == "440537" || reg_code_input.text == "110534" || reg_code_input.text == "768223" || reg_code_input.text == "998765" || reg_code_input.text == "233229" || reg_code_input.text == "643229" || reg_code_input.text == "876233" ) {
 				registered.text = "REGISTERED"
 				reg_code_input.editable = false;
@@ -2643,6 +2752,7 @@
 			else {
 				switch4_radio_off.selected = true;
 			}
+			
 			
 			if (myXML.analog_input1 == "on")  {
 				analog1_radio_on.selected = true;
@@ -2849,7 +2959,7 @@
 			StartupText.wordWrap = true;
 			addChild(StartupText);			
 			//StartupText.text = "I could not find the Magic Mirror Sensor Hub, please ensure the Firmata program has been uploaded to the Magic Mirror Sensor Hub. If you've already uploaded Firmata, then you'll need to set the port manually in the Configuration program.";		
-			output.text = "The Magic Mirror Sensor Hub was not detected, please ensure its plugged into your computer's USB port and you've installed the OS driver. Also make sure the Firmata program has been uploaded to the Magic Mirror Sensor Hub. If you've done both, close the serproxy.exe program, unplug the Sensor Hub, plug back in, and then re-start this program. If its still not detected, then you'll need to set the port manually using the 'Magic Mirror Advanced Setup' program.";
+			output.text = "The Magic Mirror Sensor Hub was not detected, please ensure its plugged into your computer's USB port and you've installed the OS driver. IMPORTANT: It must be on a COM Port that is 9 or less. Also make sure the Standard Firmata sketch has been uploaded to your Arduino. If you've done both, close the serproxy.exe program, unplug the Sensor Hub, plug back in, and then re-start this program. If its still not detected, then you'll need to set the port manually using the 'Magic Mirror Advanced Setup' program.";
 			arduino_detected.text = "Not Detected";
 		}	
 	}
@@ -3066,12 +3176,17 @@
 		
 		///*******************************
 		
-		myXML.verbose = "no";		
+		//myXML.verbose = "no";		
 		
 		myXML.weather_zip = zip_code_input.text;
 		myXML.weather_woeid = woeid_input.text;
 		myXML.stock_good_threshold = stock_good_threshold_input.text;
 		myXML.stock_bad_threshold = stock_bad_threshold_input.text;				
+		
+		myXML.bitcoin_amount = bitcoin_amount_input.text;
+		myXML.bitcoin_good_threshold = bitcoin_good_threshold_input.text;
+		myXML.bitcoin_bad_threshold = bitcoin_bad_threshold_input.text;
+		
 		myXML.reg_code = reg_code_input.text; 
 				
 		if (switch5_radio_on.selected == true) {  //this is the breathalyzer switch so also set the alcohol sensor to on
@@ -3110,6 +3225,11 @@
 			myXML.analog_input3 = "off";			
 			myXML.analog3_prox = "off";
 		}
+		
+		if (bitcoin_radio.selected == true)  {   
+			myXML.bitcoin_mode = "on";			
+		}
+		else {myXML.bitcoin_mode = "off";}		
 		
 		if (photobooth_printing_radio_on.selected == true) { //photobooth printing is turned on
 			myXML.photobooth_printing = "on"; 
@@ -3854,7 +3974,7 @@
   <display_mode_preset>0</display_mode_preset>
   <idle_videos>on</idle_videos>
   <video_resolution>high</video_resolution>
-  <version>7.10</version>
+  <version>7.11</version>
   <digital_switches>on</digital_switches>
   <switch1>off</switch1>
   <switch2>off</switch2>
@@ -3943,6 +4063,10 @@
   <prox2_before_prox1>on</prox2_before_prox1>
   <stock_good_threshold>3</stock_good_threshold>
   <stock_bad_threshold>-1</stock_bad_threshold>
+  <bitcoin_good_threshold>500</bitcoin_good_threshold>
+  <bitcoin_bad_threshold>-300</bitcoin_bad_threshold>
+  <bitcoin_mode>off</bitcoin_mode>
+  <bitcoin_amount>1</bitcoin_amount>
   <full_screen>no</full_screen>
   <no_resize>off</no_resize>
   <video_scaling_factor>2.25</video_scaling_factor>
@@ -4323,6 +4447,9 @@
   <stock_up_tts>Your stocks were up today with a rise of</stock_up_tts>
   <stock_no_change_tts>Not much change in your stocks today, the change was</stock_no_change_tts>
   <stock_down_tts>Your stocks were down with a loss of</stock_down_tts>
+  <bitcoin_up_tts>Your Bitcoin was up today with a rise of</bitcoin_up_tts>
+  <bitcoin_no_change_tts>There was not much change in your Bitcoin today, the change was</bitcoin_no_change_tts>
+  <bitcoin_down_tts>Your Bitcoin was down with a loss of</bitcoin_down_tts>
   <doorbell_tts>You've got a visitor at the door</doorbell_tts>
   <x10_on_tts>I will now turn on your X-10 device</x10_on_tts>
   <x10_off_tts>I will now turn off your X-10 device</x10_off_tts>
@@ -4452,7 +4579,7 @@
 	
 	private function CheckConfigVersion():void {
 		//let's check and make sure the user doesn't have an old version of the config file
-			if (Number(myXML.version) < 7.10) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
+			if (Number(myXML.version) < 7.11) {  //this means user's config file was old and needs to be updated but we'll also save the user's settings so they don't have to re-type
 				//AlertManager.createAlert(this, "Your configuration file was an older version and has been updated, your current settings have been maintained");
 				//before blowing the file away, let's read it into another XML so we have a record of the old settings
 				filestream.open(file, FileMode.READ);
@@ -4533,6 +4660,11 @@
 			if (myXMLold.prox2_before_prox1 != undefined) { myXML.prox2_before_prox1 = myXMLold.prox2_before_prox1; }
 			if (myXMLold.stock_good_threshold != undefined) { myXML.stock_good_threshold = myXMLold.stock_good_threshold; }
 			if (myXMLold.stock_bad_threshold != undefined) { myXML.stock_bad_threshold = myXMLold.stock_bad_threshold; }
+			
+			if (myXMLold.bitcoin_good_threshold != undefined) { myXML.bitcoin_good_threshold = myXMLold.bitcoin_good_threshold; }
+			if (myXMLold.bitcoin_bad_threshold != undefined) { myXML.bitcoin_bad_threshold = myXMLold.bitcoin_bad_threshold; }
+			if (myXMLold.bitcoin_amount != undefined) { myXML.bitcoin_amount = myXMLold.amount; }
+			if (myXMLold.bitcoin_mode != undefined) { myXML.bitcoin_mode = myXMLold.bitcoin_mode; }
 			
 			if (myXMLold.no_resize != undefined) { myXML.no_resize = myXMLold.no_resize; }
 			
